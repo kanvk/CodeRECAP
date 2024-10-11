@@ -12,6 +12,7 @@ gradio = "^5.0.2"
 streamlit = "^1.39.0"
 langchain-ollama = "^0.2.0"
 scikit-learn = "^1.5.2"
+gitpython = "^3.1.43"
 
 
 [build-system]
