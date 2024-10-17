@@ -14,7 +14,7 @@ def get_function_info(code):
             varlen_keyword_arguments = []
             
 
-            # Positional-only arguments (before '/')
+            # Positional-only arguments
             if node.args.posonlyargs:
                 positional_arguments.extend([arg.arg for arg in node.args.posonlyargs])
             
