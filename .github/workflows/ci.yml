@@ -1,4 +1,3 @@
-# .github/workflows/ci.yml
 name: CI Pipeline
 
 on:
@@ -25,17 +24,32 @@ jobs:
         with:
           python-version: '3.9'  # Specify the version of Python you want
 
-      # Step 3: Install dependencies
+      # Step 3: Cache dependencies
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # Step 4: Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4: Format code using Black (or autopep8)
-      - name: Run Code Formatter (Black)
+      # Step 5: Run Linter (flake8)
+      - name: Run Linter (flake8)
+        run: |
+          pip install flake8
+          flake8 your_app/ tests/
+
+      # Step 6: Run Code Formatter as a Check (Black)
+      - name: Check Code Formatting (Black)
         run: |
           pip install black
-          black your_app/ tests/
+          black --check your_app/ tests/
 
       # Optional: Format code using autopep8
       # - name: Run Code Formatter (autopep8)
@@ -43,9 +57,8 @@ jobs:
       #     pip install autopep8
       #     autopep8 --in-place --recursive your_app/ tests/
 
-      # Step 5: Run Unit Tests
-      - name: Run Tests
+      # Step 7: Run Unit Tests with Coverage
+      - name: Run Tests with Coverage
         run: |
-          pip install pytest
-          pytest tests/
-
+          pip install pytest pytest-cov
+          pytest --cov=your_app tests/
