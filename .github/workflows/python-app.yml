@@ -27,6 +27,8 @@ jobs:
           pip install -r requirements.txt
           
       - name: Test with pytest
+        env:
+         PYTHONPATH: ./project
         run: |
             #streamlit run project/main.py
             pip install pytest pytest-cov

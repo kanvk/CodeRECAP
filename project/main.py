@@ -2,8 +2,9 @@ import streamlit as st
 from git import Repo
 import os
 import requests
-from identifyFunctions import get_function_info  # Import the function parser from another file
-from storeFunctions import *
+from project.identifyFunctions import get_function_info
+
+from project.storeFunctions import *
 
 def update_streamlit_output_log(msg, append=True):
     if append:
