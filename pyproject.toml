@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "coderecap"
+version = "0.1.0"
+description = "Repository Context Aware Source Code Summarization"
+authors = ["Kanv Khare <kkhare@ncsu.edu>, Adithya Kiran <akiran2@ncsu.edu>, Sogolsadat Mansouri <smansou2@ncsu.edu>, Ziad Hassan <zmohame2@ncsu.edu>"]
+license = "MIT License"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+streamlit = "^1.39.0"
+langchain-ollama = "^0.2.0"
+scikit-learn = "^1.5.2"
+gitpython = "^3.1.43"
+langchain = "^0.3.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
