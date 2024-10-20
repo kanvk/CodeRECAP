@@ -6,6 +6,7 @@ from identifyFunctions import get_function_info
 
 from storeFunctions import *
 
+
 def update_streamlit_output_log(msg, append=True):
     if append:
         st.session_state.log +="  \n"+msg
@@ -77,7 +78,6 @@ def analyze_python_files(clone_dir):
                     function_infos.extend(function_info)  # Add found function info to the list
     return function_infos
 
-
 def entrypoint(repo_url):
     """
     This is the entrypoint function that will be invoked once a URL is input into the streamlit frontend
@@ -138,9 +138,11 @@ def main():
         st.session_state.log = ""  # Initialize log if not already done
 
     url = st.text_input("Enter the URL to the git repo to be analyzed:")
+
     if url:
         entrypoint(url)
         st.markdown(st.session_state.log)
+
 
 if __name__ == "__main__":
     main()
