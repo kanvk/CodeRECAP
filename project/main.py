@@ -2,6 +2,10 @@ import streamlit as st
 from git import Repo
 import os
 import requests
+from identifyFunctions import get_function_info
+
+from storeFunctions import *
+
 
 def update_streamlit_output_log(msg, append=True):
     if append:
@@ -54,16 +58,66 @@ def clone_repository(repo_url):
         update_streamlit_output_log(f"An error occurred while cloning the repository: {e}")
         raise e
 
+def analyze_python_files(clone_dir):
+    """Analyze all Python files in the cloned repository, including all subdirectories."""
+    function_infos = []
+    for root, _, files in os.walk(clone_dir):
+        for file in files:
+            if file.endswith('.py'):
+                file_path = os.path.join(root, file)
+                with open(file_path, 'r') as f:
+                    code = f.read()
+                    # Debugging: Print the file name and content
+                    print(f"Analyzing file: {file_path}")
+                    print(f"Content:\n{code}\n")  # Print the content of the file
+
+                    function_info = get_function_info(code)
+                    for info in function_info:
+                        # Add the file path to each function's information
+                        info['file_path'] = file_path
+                    function_infos.extend(function_info)  # Add found function info to the list
+    return function_infos
+
 def entrypoint(repo_url):
     """
     This is the entrypoint function that will be invoked once a URL is input into the streamlit frontend
     """
-    # Check if it is a valid github url
+    # Check if it is a valid GitHub URL
     if not is_github_url_valid(repo_url):
         return
+    
+    # Extract the repository name from the URL
+    repo_name = repo_url.split('/')[-1]
+    if repo_name.endswith(".git"):
+        repo_name = repo_name[:-4]
+        
     # Clone the repository into the cloned_repos directory
-    clone_repository(repo_url)
-    # TODO: Index all python files from the cloned repository and store it in the database
+    try:
+        clone_repository(repo_url)
+    except Exception as e:
+        update_streamlit_output_log(f"Error while cloning the repository: {e}")
+        return
+    
+    # Create a database with the repo_name
+    create_database(db_name=repo_name)
+    
+    # Analyze Python files and get function info
+    clone_dir = f"./cloned_repos/{repo_name}"
+    function_infos = analyze_python_files(clone_dir)
+
+    if function_infos:
+        # Insert function data into the database
+        insert_function_data(function_infos, db_name=repo_name)
+        for info in function_infos:
+            update_streamlit_output_log(
+                f"File: {info['file_path']}\n"
+                f"Function: {info['name']}, Line Start: {info['start_line']}, "
+                f"Line End: {info['end_line']}, Args: {info['arguments']}, "
+                f"Varlen Args: {info['varlen_arguments']}, Keyword Args: {info['keyword_arguments']}, "
+                f"Positional Args: {info['positional_arguments']}, Varlen Keyword Args: {info['varlen_keyword_arguments']}"
+            )
+    else:
+        update_streamlit_output_log("No Python functions found in the repository.")
 
 
 def main():
@@ -79,12 +133,15 @@ def main():
             """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
     st.title("CodeRECAP")
-    url = st.text_input("Enter the URL to the git repo to be analysed:")
-    st.session_state.log = ""
+    
+    if 'log' not in st.session_state:
+        st.session_state.log = ""  # Initialize log if not already done
+
+    url = st.text_input("Enter the URL to the git repo to be analyzed:")
+
     if url:
         entrypoint(url)
         st.markdown(st.session_state.log)
-
 
 
 if __name__ == "__main__":
