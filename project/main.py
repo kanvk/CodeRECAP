@@ -1,14 +1,17 @@
+import os
 import streamlit as st
 from git import Repo
-import os
 import requests
+from llmPromt import get_response, setup_llama_client
 from identifyFunctions import get_function_info
-
 from storeFunctions import *
+
+# Set up LLaMA client
+client, model_name = setup_llama_client()
 
 def update_streamlit_output_log(msg, append=True):
     if append:
-        st.session_state.log +="  \n"+msg
+        st.session_state.log += "  \n" + msg
     else:
         st.session_state.log = msg
 
@@ -108,6 +111,17 @@ def entrypoint(repo_url):
     if function_infos:
         # Insert function data into the database
         insert_function_data(function_infos, db_name=repo_name)
+        
+        repo_summary = "\n".join(
+            [
+                f"File: {info['file_path']}, Function: {info['name']}, "
+                f"Arguments: {info['arguments']}, Start Line: {info['start_line']}, End Line: {info['end_line']}"
+                for info in function_infos
+            ]
+        )
+
+        st.session_state['repo_info'] = repo_summary
+
         for info in function_infos:
             update_streamlit_output_log(
                 f"File: {info['file_path']}\n"
@@ -118,7 +132,27 @@ def entrypoint(repo_url):
             )
     else:
         update_streamlit_output_log("No Python functions found in the repository.")
+        st.session_state['repo_info'] = "No functions found in the repository."
 
+def on_submit_question():
+    question = st.session_state.get('user_question', '').strip()
+    if not question:
+        st.write("Please enter a valid question.")
+    else:
+        # Get information about the repository
+        repo_info = st.session_state.get('repo_info', 'No repository information available.')
+
+        # Combine repository information with the user question
+        prompt = (
+            f"You are an AI assistant who has analyzed the following Python repository:\n\n"
+            f"{repo_info}\n\n"
+            f"The user has the following question about the repository:\n"
+            f"{question}"
+        )
+
+        response = get_response(client, model_name, prompt)
+        st.session_state['chat_history'].append(f"User: {question}\nAssistant: {response}")
+        st.write(f"Assistant Response: {response}")
 
 def main():
     """
@@ -133,6 +167,15 @@ def main():
             """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
     st.title("CodeRECAP")
+
+    if 'log' not in st.session_state:
+        st.session_state.log = ""  # Initialize log if not already done
+
+    if 'repo_info' not in st.session_state:
+        st.session_state.repo_info = ""  # Initialize repository information if not already done
+
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []  # Initialize chat history if not already done
     
     if 'log' not in st.session_state:
         st.session_state.log = ""  # Initialize log if not already done
@@ -141,6 +184,16 @@ def main():
     if url:
         entrypoint(url)
         st.markdown(st.session_state.log)
+
+    st.subheader("Ask Questions About Cloned Repository")
+    user_question = st.text_input("Enter your question:", key='user_question')
+    if st.button("Get Response", on_click=on_submit_question):
+        pass
+
+    # Display chat history
+    if st.session_state.chat_history:
+        for chat in st.session_state.chat_history:
+            st.markdown(chat)
 
 if __name__ == "__main__":
     main()
