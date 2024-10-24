@@ -1,2 +1,5 @@
 streamlit
 poetry
+transformers
+torch
+faiss-cpu
