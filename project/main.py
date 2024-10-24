@@ -1,11 +1,16 @@
 import streamlit as st
 from git import Repo
 import os
+import csv
 import requests
 from identifyFunctions import get_function_info
-
+from vectorizeCode import * 
 from storeFunctions import *
 
+
+
+repo_python_files = []
+repo_python_file_names = []
 
 def update_streamlit_output_log(msg, append=True):
     if append:
@@ -66,7 +71,11 @@ def analyze_python_files(clone_dir):
             if file.endswith('.py'):
                 file_path = os.path.join(root, file)
                 with open(file_path, 'r') as f:
-                    code = f.read()
+                    code = f.read().strip()
+                    # Add all python files into a global list
+                    if code:
+                        repo_python_files.append(code)
+                        repo_python_file_names.append(file)
                     # Debugging: Print the file name and content
                     print(f"Analyzing file: {file_path}")
                     print(f"Content:\n{code}\n")  # Print the content of the file
@@ -78,7 +87,7 @@ def analyze_python_files(clone_dir):
                     function_infos.extend(function_info)  # Add found function info to the list
     return function_infos
 
-def entrypoint(repo_url):
+def entrypoint(repo_url, query):
     """
     This is the entrypoint function that will be invoked once a URL is input into the streamlit frontend
     """
@@ -119,6 +128,31 @@ def entrypoint(repo_url):
     else:
         update_streamlit_output_log("No Python functions found in the repository.")
 
+    # Initialize the tokenizer and model
+    tokenizer = RobertaTokenizer.from_pretrained("microsoft/unixcoder-base")
+    model = RobertaModel.from_pretrained("microsoft/unixcoder-base")
+
+    code_vectors = []
+    for code_file in repo_python_files:
+        code_vectors.append(vectorize_code(code_file, tokenizer, model))
+
+    csv_file = "embeddings.csv"
+
+    with open(csv_file, 'w', newline='') as f:
+        writer = csv.writer(f)
+        for vec in code_vectors:
+            writer.writerow(vec)  # Write the vector directly
+
+    embeddings_query = vectorize_code(query, tokenizer, model)
+
+    matches = get_matches(embeddings_query,code_vectors,3)
+
+    for i, match in enumerate(matches):
+        index = match[0]
+        update_streamlit_output_log(f"Match {i + 1}: {repo_python_file_names[index-1]}")
+
+
+
 
 def main():
     """
@@ -139,8 +173,10 @@ def main():
 
     url = st.text_input("Enter the URL to the git repo to be analyzed:")
 
-    if url:
-        entrypoint(url)
+    query = st.text_input("Enter your query:")
+
+    if url and query:
+        entrypoint(url, query)
         st.markdown(st.session_state.log)
 
 
