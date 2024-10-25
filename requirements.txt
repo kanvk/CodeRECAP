@@ -4,3 +4,8 @@ torch>=2.0.0
 transformers>=4.30.0
 azure-ai-language-conversations
 azure-core
+azure-ai-inference
+
+tkinter  # Typically comes with Python, not required in requirements.txt
+
+
