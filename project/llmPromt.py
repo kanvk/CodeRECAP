@@ -84,8 +84,6 @@
 #     sample_embeddings()
 
 import os
-import tkinter as tk
-from tkinter import messagebox
 from azure.ai.inference import ChatCompletionsClient
 from azure.ai.inference.models import SystemMessage, UserMessage
 from azure.core.credentials import AzureKeyCredential
