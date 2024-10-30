@@ -3,6 +3,7 @@ import ast
 def get_function_info(code):
     tree = ast.parse(code)
     functions = []
+    code_lines = code.splitlines()
 
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef):
@@ -33,6 +34,8 @@ def get_function_info(code):
             if node.args.kwarg:
                 varlen_keyword_arguments.append(f"**{node.args.kwarg.arg}")
 
+            function_code = "\n".join(code_lines[node.lineno - 1: node.end_lineno])
+
             # Collect function information
             function_info = {
                 'name': node.name,
@@ -42,7 +45,8 @@ def get_function_info(code):
                 'varlen_arguments' : varlen_arguments,
                 'keyword_arguments' : keyword_arguments,
                 'positional_arguments' : positional_arguments,
-                'varlen_keyword_arguments' : varlen_keyword_arguments
+                'varlen_keyword_arguments' : varlen_keyword_arguments,
+                'code' : function_code
             }
             functions.append(function_info)
 

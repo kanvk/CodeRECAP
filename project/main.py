@@ -8,7 +8,6 @@ from vectorizeCode import *
 from storeFunctions import *
 
 
-
 repo_python_files = []
 repo_python_file_names = []
 
@@ -117,42 +116,53 @@ def entrypoint(repo_url, query):
     if function_infos:
         # Insert function data into the database
         insert_function_data(function_infos, db_name=repo_name)
-        for info in function_infos:
-            update_streamlit_output_log(
-                f"File: {info['file_path']}\n"
-                f"Function: {info['name']}, Line Start: {info['start_line']}, "
-                f"Line End: {info['end_line']}, Args: {info['arguments']}, "
-                f"Varlen Args: {info['varlen_arguments']}, Keyword Args: {info['keyword_arguments']}, "
-                f"Positional Args: {info['positional_arguments']}, Varlen Keyword Args: {info['varlen_keyword_arguments']}"
-            )
+        # Create a mapping between function names and file paths
     else:
         update_streamlit_output_log("No Python functions found in the repository.")
+
 
     # Initialize the tokenizer and model
     tokenizer = RobertaTokenizer.from_pretrained("microsoft/unixcoder-base")
     model = RobertaModel.from_pretrained("microsoft/unixcoder-base")
 
-    code_vectors = []
-    for code_file in repo_python_files:
-        code_vectors.append(vectorize_code(code_file, tokenizer, model))
+    code_vectors_function_level = [vectorize_function(function_info, tokenizer, model) for function_info in function_infos]
+
+    code_vectors = [vectorize_code(code_file, tokenizer, model) for code_file in repo_python_files]
 
     csv_file = "embeddings.csv"
-
     with open(csv_file, 'w', newline='') as f:
         writer = csv.writer(f)
         for vec in code_vectors:
             writer.writerow(vec)  # Write the vector directly
 
     embeddings_query = vectorize_code(query, tokenizer, model)
+    #update_streamlit_output_log(f"{code_vectors_function_level}")
 
-    matches = get_matches(embeddings_query,code_vectors,3)
+    matches = get_matches(embeddings_query, code_vectors, 3)
 
+    matches_function_level = get_function_matches(embeddings_query, code_vectors_function_level, 3)
+
+    output_text = "Top function-level matches:\n"
+
+    # Append function-level matches to the output text
+    for i, (func_name, path, similarity) in enumerate(matches_function_level, start=1):
+        output_text += f"{i}. Function: {func_name}\n"
+        output_text += f"   Path: {path}\n"
+        output_text += f"   Similarity Score: {similarity:.4f}\n\n"
+
+    # Initialize the output text for file-level matches
+    output_text += "Top file-level matches:\n\n"
+
+    # Append file-level matches to the output text
     for i, match in enumerate(matches):
-        index = match[0]
-        update_streamlit_output_log(f"Match {i + 1}: {repo_python_file_names[index-1]}")
+        index = match[0]  # Get the index of the match
+        if index > 0:  # Ensure the index is valid
+            file_name = repo_python_file_names[index - 1]  # Adjust for zero-based index
+            output_text += f"{i + len(matches_function_level)}. File: {file_name}\n"  # Continue numbering
+            output_text += f"   Path: {file_name}\n"  # Assuming the path is the same as the file name for simplicity
 
-
-
+    # Update the Streamlit log with the complete output for file-level matches
+    update_streamlit_output_log(output_text)
 
 def main():
     """
