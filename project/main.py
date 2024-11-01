@@ -120,8 +120,18 @@ def entrypoint(repo_url, query):
         # Insert function data into the database
         insert_function_data(function_infos, db_name=repo_name)
         # Create a mapping between function names and file paths
+        repo_summary = "\n".join(
+            [
+                f"File: {info['file_path']}, Function: {info['name']}, "
+                f"Arguments: {info['arguments']}, Start Line: {info['start_line']}, End Line: {info['end_line']}"
+                for info in function_infos
+            ]
+        )
+
+        st.session_state['repo_info'] = repo_summary
     else:
         update_streamlit_output_log("No Python functions found in the repository.")
+        st.session_state['repo_info'] = "No functions found in the repository."
 
 
     # Initialize the tokenizer and model
@@ -167,6 +177,27 @@ def entrypoint(repo_url, query):
     # Update the Streamlit log with the complete output for file-level matches
     update_streamlit_output_log(output_text)
 
+def on_submit_question():
+    question = st.session_state.get('user_question', '').strip()
+    if not question:
+        st.write("Please enter a valid question.")
+    else:
+        # Get information about the repository
+        repo_info = st.session_state.get('repo_info', 'No repository information available.')
+
+        # Combine repository information with the user question
+        prompt = (
+            f"You are an AI assistant who has analyzed the following Python repository:\n\n"
+            f"{repo_info}\n\n"
+            f"The user has the following question about the repository:\n"
+            f"{question}"
+        )
+
+        response = get_response(client, model_name, prompt)
+        st.session_state['chat_history'].append(f"User: {question}\nAssistant: {response}")
+        st.write(f"Assistant Response: {response}")
+
+
 def main():
     """
     Main function for the Streamlit app.
@@ -191,9 +222,22 @@ def main():
     if url and query:
         entrypoint(url, query)
         st.markdown(st.session_state.log)
+        
+    st.subheader("Ask Questions About Cloned Repository")
+    user_question = st.text_input("Enter your question:", key='user_question')
+    if st.button("Get Response", on_click=on_submit_question):
+        pass
+
+    # Display chat history
+    if st.session_state.chat_history:
+        for chat in st.session_state.chat_history:
+            st.markdown(chat)
 
 
 if __name__ == "__main__":
     main()
 
 # Example usage: Input a valid URL in the text box. Eg: "https://github.com/kanvk/CodeRECAP.git"
+
+
+
