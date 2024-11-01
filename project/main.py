@@ -4,12 +4,15 @@ import os
 import csv
 import requests
 from identifyFunctions import get_function_info
+from llmPrompt import *
 from vectorizeCode import * 
 from storeFunctions import *
 
 
 repo_python_files = []
 repo_python_file_names = []
+# Set up LLaMA client
+client, model_name = setup_llama_client()
 
 def update_streamlit_output_log(msg, append=True):
     if append:
