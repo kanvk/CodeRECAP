@@ -3,3 +3,4 @@ poetry
 transformers
 torch
 faiss-cpu
+azure-ai-inference
