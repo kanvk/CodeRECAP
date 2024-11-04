@@ -1,7 +1,7 @@
 import os
-# from azure.ai.inference import ChatCompletionsClient
-# from azure.ai.inference.models import SystemMessage, UserMessage
-# from azure.core.credentials import AzureKeyCredential
+from azure.ai.inference import ChatCompletionsClient
+from azure.ai.inference.models import SystemMessage, UserMessage
+from azure.core.credentials import AzureKeyCredential
 
 
 # Function to set up LLaMA client
