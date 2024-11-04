@@ -4,13 +4,15 @@ import os
 import csv
 import requests
 from identifyFunctions import get_function_info
+from llmPrompt import *
 from vectorizeCode import * 
 from storeFunctions import *
 
 
-
 repo_python_files = []
 repo_python_file_names = []
+# Set up LLaMA client
+client, model_name = setup_llama_client()
 
 def update_streamlit_output_log(msg, append=True):
     if append:
@@ -117,41 +119,83 @@ def entrypoint(repo_url, query):
     if function_infos:
         # Insert function data into the database
         insert_function_data(function_infos, db_name=repo_name)
-        for info in function_infos:
-            update_streamlit_output_log(
-                f"File: {info['file_path']}\n"
-                f"Function: {info['name']}, Line Start: {info['start_line']}, "
-                f"Line End: {info['end_line']}, Args: {info['arguments']}, "
-                f"Varlen Args: {info['varlen_arguments']}, Keyword Args: {info['keyword_arguments']}, "
-                f"Positional Args: {info['positional_arguments']}, Varlen Keyword Args: {info['varlen_keyword_arguments']}"
-            )
+        # Create a mapping between function names and file paths
+        repo_summary = "\n".join(
+            [
+                f"File: {info['file_path']}, Function: {info['name']}, "
+                f"Arguments: {info['arguments']}, Start Line: {info['start_line']}, End Line: {info['end_line']}"
+                for info in function_infos
+            ]
+        )
+
+        st.session_state['repo_info'] = repo_summary
     else:
         update_streamlit_output_log("No Python functions found in the repository.")
+        st.session_state['repo_info'] = "No functions found in the repository."
+
 
     # Initialize the tokenizer and model
     tokenizer = RobertaTokenizer.from_pretrained("microsoft/unixcoder-base")
     model = RobertaModel.from_pretrained("microsoft/unixcoder-base")
 
-    code_vectors = []
-    for code_file in repo_python_files:
-        code_vectors.append(vectorize_code(code_file, tokenizer, model))
+    code_vectors_function_level = [vectorize_function(function_info, tokenizer, model) for function_info in function_infos]
+
+    code_vectors = [vectorize_code(code_file, tokenizer, model) for code_file in repo_python_files]
 
     csv_file = "embeddings.csv"
-
     with open(csv_file, 'w', newline='') as f:
         writer = csv.writer(f)
         for vec in code_vectors:
             writer.writerow(vec)  # Write the vector directly
 
     embeddings_query = vectorize_code(query, tokenizer, model)
+    #update_streamlit_output_log(f"{code_vectors_function_level}")
 
-    matches = get_matches(embeddings_query,code_vectors,3)
+    matches = get_matches(embeddings_query, code_vectors, 3)
 
+    matches_function_level = get_function_matches(embeddings_query, code_vectors_function_level, 3)
+
+    output_text = "Top function-level matches:\n"
+
+    # Append function-level matches to the output text
+    for i, (func_name, path, similarity) in enumerate(matches_function_level, start=1):
+        output_text += f"{i}. Function: {func_name}\n"
+        output_text += f"   Path: {path}\n"
+        output_text += f"   Similarity Score: {similarity:.4f}\n\n"
+
+    # Initialize the output text for file-level matches
+    output_text += "Top file-level matches:\n\n"
+
+    # Append file-level matches to the output text
     for i, match in enumerate(matches):
-        index = match[0]
-        update_streamlit_output_log(f"Match {i + 1}: {repo_python_file_names[index-1]}")
+        index = match[0]  # Get the index of the match
+        if index > 0:  # Ensure the index is valid
+            file_name = repo_python_file_names[index - 1]  # Adjust for zero-based index
+            output_text += f"{i + len(matches_function_level)}. File: {file_name}\n"  # Continue numbering
+            output_text += f"   Path: {file_name}\n"  # Assuming the path is the same as the file name for simplicity
 
+    # Update the Streamlit log with the complete output for file-level matches
+    update_streamlit_output_log(output_text)
 
+def on_submit_question():
+    question = st.session_state.get('user_question', '').strip()
+    if not question:
+        st.write("Please enter a valid question.")
+    else:
+        # Get information about the repository
+        repo_info = st.session_state.get('repo_info', 'No repository information available.')
+
+        # Combine repository information with the user question
+        prompt = (
+            f"You are an AI assistant who has analyzed the following Python repository:\n\n"
+            f"{repo_info}\n\n"
+            f"The user has the following question about the repository:\n"
+            f"{question}"
+        )
+
+        response = get_response(client, model_name, prompt)
+        st.session_state['chat_history'].append(f"User: {question}\nAssistant: {response}")
+        st.write(f"Assistant Response: {response}")
 
 
 def main():
@@ -178,9 +222,24 @@ def main():
     if url and query:
         entrypoint(url, query)
         st.markdown(st.session_state.log)
+        
+    st.subheader("Ask Questions About Cloned Repository")
+    user_question = st.text_input("Enter your question:", key='user_question')
+    if st.button("Get Response", on_click=on_submit_question):
+        pass
+
+    # Display chat history
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []
+    if st.session_state.chat_history:
+        for chat in st.session_state.chat_history:
+            st.markdown(chat)
 
 
 if __name__ == "__main__":
     main()
 
 # Example usage: Input a valid URL in the text box. Eg: "https://github.com/kanvk/CodeRECAP.git"
+
+
+

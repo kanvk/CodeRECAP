@@ -7,4 +7,9 @@ Repository Context Aware Source Code Summarization
 2. Run CodeRECAP using `streamlit run project/main.py`
 
 ## Usage
-A hello world webpage is created.
+1. Enter the URL to the git repo to be analyzed:
+
+2. Enter your query
+
+- Top function-level matches and top file-level matches will be printed on your screen
+
