@@ -6,31 +6,46 @@ import concurrent.futures
 import time
 import random
 
-# GitHub API token
-g = Github('token')
+import os
+from github import Github
 
-# Define timeframe for filtering PRs
-one_year_ago = datetime.now(pytz.UTC) - timedelta(days=30)
+# Get the GitHub token from environment variables
+token = os.getenv("GITHUB_TOKEN")
+
+# Check if the token is retrieved successfully
+if token is None:
+    raise ValueError("Please set the environment variable 'GITHUB_TOKEN'.")
+
+g = Github(token)
+
+
 
 # Initialize a list to store data and set a record limit
 data = []
 record_limit = 20
-repos_limit = 100  # Limit to 10 repositories
-prs_per_repo = 100  # Limit to 10 PRs per repository
+repos_limit = 10  # Limit to 10 repositories
+prs_per_repo = 10  # Limit to 10 PRs per repository
 
 # Exponential backoff function with jitter
 def exponential_backoff(base=60, factor=2, jitter=5):
     return base * factor + random.uniform(-jitter, jitter)
 
 # Process each repository
+# Define timeframe for filtering PRs
+one_month_ago = datetime.now(pytz.UTC) - timedelta(days=30)  # Keep this offset-aware
+
+# In process_repo function, ensure pr.created_at is also in UTC
 def process_repo(repo):
     repo_data = []
     pulls = repo.get_pulls(state='closed')[:prs_per_repo]  # Limit to last 10 PRs
 
     for pr in pulls:
         try:
+            # Convert pr.created_at to UTC timezone to ensure both are comparable
+            created_at_utc = pr.created_at.astimezone(pytz.UTC)
+
             # Check if the PR is merged and meets criteria
-            if pr.merged and pr.created_at >= one_year_ago and pr.body and len(pr.body.split()) >= 50:
+            if pr.merged and created_at_utc >= one_month_ago and pr.body and len(pr.body.split()) >= 50:
                 instance_id = f"{repo.name}__{pr.number}"
 
                 # Collect base commit details
@@ -39,7 +54,7 @@ def process_repo(repo):
 
                 # Initialize commit-related fields
                 patch, test_patch = [], []
-                
+
                 # Collect diff/patch information
                 for file in pr.get_files():
                     if file.patch:
@@ -56,7 +71,7 @@ def process_repo(repo):
                     'test_patch': "\n".join(test_patch),
                     'problem_statement': pr.body,
                     'hints_text': None,  # Placeholder for hints text
-                    'created_at': pr.created_at.isoformat(),  # Use ISO format for datetime
+                    'created_at': created_at_utc.isoformat(),  # Use ISO format for datetime
                     'version': "v1.0",
                     'FAIL_TO_PASS': None,  # Placeholder for transition metrics
                     'PASS_TO_PASS': None,  # Placeholder for transition metrics
@@ -95,4 +110,3 @@ print(f"Number of records: {len(df)}")
 
 # Optionally, save to CSV
 df.to_csv('swe_bench_like_dataset.csv', index=False)
-
