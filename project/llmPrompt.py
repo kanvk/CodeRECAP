@@ -18,7 +18,6 @@ def setup_llama_client():
         endpoint=endpoint,
         credential=AzureKeyCredential(token),
     )
-    #client = None  # Placeholder to avoid errors 
 
     return client, model_name
 
