@@ -9,16 +9,16 @@ def setup_llama_client():
     endpoint = "https://models.inference.ai.azure.com"
     model_name = "Meta-Llama-3-8B-Instruct"
     #it should be uncommented
-    # token = os.getenv("AZURE_INFERENCE_CREDENTIAL")
+    token = os.getenv("AZURE_INFERENCE_CREDENTIAL")
     
-    # if not token:
-    #     raise ValueError("Please set the environment variable 'AZURE_INFERENCE_CREDENTIAL'.")
+    if not token:
+        raise ValueError("Please set the environment variable 'AZURE_INFERENCE_CREDENTIAL'.")
 
-    # client = ChatCompletionsClient(
-    #     endpoint=endpoint,
-    #     credential=AzureKeyCredential(token),
-    # )
-    client = None  # Placeholder to avoid errors 
+    client = ChatCompletionsClient(
+        endpoint=endpoint,
+        credential=AzureKeyCredential(token),
+    )
+    #client = None  # Placeholder to avoid errors 
 
     return client, model_name
 

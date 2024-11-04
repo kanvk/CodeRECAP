@@ -25,7 +25,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          
+
+      - name: Export Azure inference credential for the environment
+        run: echo "AZURE_INFERENCE_CREDENTIAL=${{ secrets.azure_inference_credentials }}" >> $GITHUB_ENV
+  
       - name: Test with pytest
         env:
          PYTHONPATH: ./project
