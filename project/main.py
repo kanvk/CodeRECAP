@@ -229,6 +229,8 @@ def main():
         pass
 
     # Display chat history
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []
     if st.session_state.chat_history:
         for chat in st.session_state.chat_history:
             st.markdown(chat)
