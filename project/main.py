@@ -33,7 +33,6 @@ def query_repo(query_text):
     # LLM Query
     display_llm_response(query_text)
 
-
 def main():
     """
     Main function for the Streamlit app.
@@ -72,7 +71,6 @@ def main():
         if query_text:
             query_repo(query_text)
     st.write(st.session_state.querying_log)
-
 
 if __name__ == "__main__":
     main()
