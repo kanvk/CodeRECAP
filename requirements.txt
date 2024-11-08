@@ -3,3 +3,8 @@ poetry
 transformers
 torch
 faiss-cpu
+azure-ai-inference
+langchain
+langchain_huggingface
+langchain_community
+gitpython

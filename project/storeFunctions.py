@@ -1,10 +1,11 @@
 import sqlite3
 import os
 
+
 def create_database(db_name, path=os.getcwd()):
     conn = sqlite3.connect(os.path.join(path, f"{db_name}.db"))
     cursor = conn.cursor()
-    
+
     # Create tables to store functions and arguments
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS functions (
@@ -29,6 +30,7 @@ def create_database(db_name, path=os.getcwd()):
     conn.commit()
     conn.close()
 
+
 def insert_function_data(functions_info, db_name, path=os.getcwd()):
     conn = sqlite3.connect(os.path.join(path, f"{db_name}.db"))
     cursor = conn.cursor()
@@ -39,8 +41,9 @@ def insert_function_data(functions_info, db_name, path=os.getcwd()):
             '''
             INSERT INTO functions (name, start_line, end_line, file_path)
             VALUES (?, ?, ?, ?)
-            ''', 
-            (function_info['name'], function_info['start_line'], function_info['end_line'], function_info['file_path'])
+            ''',
+            (function_info['name'], function_info['start_line'],
+             function_info['end_line'], function_info['file_path'])
         )
 
         # Get the ID of the last inserted function
@@ -54,8 +57,8 @@ def insert_function_data(functions_info, db_name, path=os.getcwd()):
                 VALUES (?, ?, ?)
                 ''',
                 (function_id, 'argument', arg)
-            )        
-        
+            )
+
         # Insert positional arguments
         for arg in function_info['positional_arguments']:
             cursor.execute(
@@ -72,7 +75,7 @@ def insert_function_data(functions_info, db_name, path=os.getcwd()):
                 '''
                 INSERT INTO arguments (function_id, argument_type, name)
                 VALUES (?, ?, ?)
-                ''', 
+                ''',
                 (function_id, 'varlen', arg)
             )
 
@@ -82,7 +85,7 @@ def insert_function_data(functions_info, db_name, path=os.getcwd()):
                 '''
                 INSERT INTO arguments (function_id, argument_type, name)
                 VALUES (?, ?, ?)
-                ''', 
+                ''',
                 (function_id, 'keyword', arg)
             )
 
@@ -95,6 +98,6 @@ def insert_function_data(functions_info, db_name, path=os.getcwd()):
                 ''',
                 (function_id, 'varlen_keyword', arg)
             )
-        
+
     conn.commit()
     conn.close()
