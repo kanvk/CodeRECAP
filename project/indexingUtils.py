@@ -5,7 +5,7 @@ import streamlit as st
 from identifyFunctions import get_function_info
 from storeFunctions import create_database, insert_function_data
 from vectorizeCode import create_documents_from_code_infos, save_to_faiss_vector_store, UniXcoderEmbeddings
-
+from tfidf import vectorize_documents_tfidf
 
 def update_indexing_output_log(msg, append=True):
     if append:
@@ -143,6 +143,10 @@ def index_repo_files_and_functions(repo_name, clone_dir):
     function_docs = create_documents_from_code_infos(
         st.session_state.function_infos)
     file_docs = create_documents_from_code_infos(st.session_state.file_infos)
+
+
+    st.session_state.tfidf_matrix, st.session_state.tfidf_vectorizer = vectorize_documents_tfidf(
+        st.session_state.file_infos)    
     st.session_state.functions_vector_store = save_to_faiss_vector_store(
         f"vector_stores/{repo_name}/functions_index", function_docs, unixcoder_embedding_model)
     update_indexing_output_log(
