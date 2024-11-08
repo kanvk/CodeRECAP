@@ -32,4 +32,4 @@ jobs:
         run: |
             #streamlit run project/main.py
             pip install pytest pytest-cov
-            pytest tests/test.py --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+            pytest

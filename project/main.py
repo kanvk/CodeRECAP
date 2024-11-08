@@ -4,6 +4,8 @@ from queryUtils import display_top_k_similar_docs, reset_querying_output_log, di
 
 # Example usage: Input a valid URL in the text box. Eg: "https://github.com/kanvk/CodeRECAP.git"
 
+def hello_world(name):
+    return f"Hello, {name}!"
 
 def index_repo(url):
     reset_indexing_output_log()
