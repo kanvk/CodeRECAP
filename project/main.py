@@ -1,6 +1,6 @@
 import streamlit as st
 from indexingUtils import is_github_url_valid, clone_repository, index_repo_files_and_functions, reset_indexing_output_log
-from queryUtils import display_top_k_similar_docs, reset_querying_output_log, display_llm_response
+from queryUtils import display_top_k_similar_docs, reset_querying_output_log, display_llm_response, display_top_k_similar_docs_tfidf
 
 # Example usage: Input a valid URL in the text box. Eg: "https://github.com/kanvk/CodeRECAP.git"
 
@@ -30,6 +30,10 @@ def query_repo(query_text):
     # Vector similarity for files
     display_top_k_similar_docs(
         st.session_state.files_vector_store, query_text, 5, "file")
+    # TF-IDF similarity for files
+    display_top_k_similar_docs_tfidf(
+        query_text, 5, "file"
+    )
     # LLM Query
     display_llm_response(query_text)
 
