@@ -8,48 +8,56 @@ from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 
+
 def vectorize_function(function_dict, tokenizer, model):
     # Extract the code from the function info
-    code = function_dict['code']  # Access the 'code' field
-    
+    code = function_dict["code"]  # Access the 'code' field
+
     # Tokenize the code
-    inputs = tokenizer(code, return_tensors="pt", truncation=True, padding=True, max_length=512)
-    
+    inputs = tokenizer(
+        code, return_tensors="pt", truncation=True, padding=True, max_length=512
+    )
+
     with torch.no_grad():
         outputs = model(**inputs)  # Get the model outputs
-    
+
     # Compute the embeddings
     embeddings = outputs.last_hidden_state.mean(dim=1).numpy()
-    
+
     # Prepare the vectorized information as a dictionary
     vectorized_info = {
-        'name': function_dict['name'],
-        'path': function_dict['file_path'],  # Optional path if included
-        'vector': embeddings
+        "name": function_dict["name"],
+        "path": function_dict["file_path"],  # Optional path if included
+        "vector": embeddings,
     }
-    
+
     return vectorized_info
+
 
 def get_function_matches(embedding_query, vectorized_list, k):
     """
     Search for the top K most similar functions given a query embedding, using vectorized function info.
     """
     # Extract the code vectors and create a list of function names and paths
-    code_vectors = np.vstack([func_info['vector'] for func_info in vectorized_list])
-    
+    code_vectors = np.vstack([func_info["vector"] for func_info in vectorized_list])
+
     dimension = code_vectors.shape[1]
     index = faiss.IndexFlatL2(dimension)
     index.add(code_vectors)
-    
+
     # Search for the top K most similar vectors
     distances, indices = index.search(embedding_query.reshape(1, -1), k)
-    
+
     # Retrieve top K results with function names, paths, and similarity scores
     results = [
-        (vectorized_list[idx]['name'], vectorized_list[idx]['path'], 1 / (1 + distances[0][i]))
+        (
+            vectorized_list[idx]["name"],
+            vectorized_list[idx]["path"],
+            1 / (1 + distances[0][i]),
+        )
         for i, idx in enumerate(indices[0])
     ]
-    
+
     return results
 
 
@@ -59,8 +67,9 @@ def unixcoder_embeddings(texts):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModel.from_pretrained(model_name)
     # Tokenize the list of texts
-    inputs = tokenizer(texts, padding=True, truncation=True,
-                       max_length=1024, return_tensors="pt")
+    inputs = tokenizer(
+        texts, padding=True, truncation=True, max_length=1024, return_tensors="pt"
+    )
     # Pass the inputs through the model
     with torch.no_grad():
         outputs = model(**inputs, output_hidden_states=True, return_dict=True)
@@ -88,16 +97,17 @@ class UniXcoderEmbeddings(HuggingFaceEmbeddings):
 
 
 def create_documents_from_code_infos(code_infos):
-    data = [(info["code_snippet"], {k: v for k, v in info.items(
-    ) if k != "code_snippet"}) for info in code_infos]
+    data = [
+        (info["code_snippet"], {k: v for k, v in info.items() if k != "code_snippet"})
+        for info in code_infos
+    ]
     docs = [Document(page_content=doc[0], metadata=doc[1]) for doc in data]
     return docs
 
 
 def save_to_faiss_vector_store(index_name, documents, embedding_model):
     # Create faiss index
-    index = faiss.IndexFlatL2(
-        len(embedding_model.embed_query("print('hello world')")))
+    index = faiss.IndexFlatL2(len(embedding_model.embed_query("print('hello world')")))
     # Create vector store with the index
     vector_store = FAISS(
         embedding_function=embedding_model,
@@ -115,7 +125,8 @@ def save_to_faiss_vector_store(index_name, documents, embedding_model):
 
 def load_faiss_vector_store(index_name, embedding_model):
     vector_store = FAISS.load_local(
-        index_name, embedding_model, allow_dangerous_deserialization=True)
+        index_name, embedding_model, allow_dangerous_deserialization=True
+    )
     return vector_store
 
 

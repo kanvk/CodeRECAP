@@ -1,11 +1,23 @@
 import streamlit as st
-from indexingUtils import is_github_url_valid, clone_repository, index_repo_files_and_functions, reset_indexing_output_log
-from queryUtils import display_top_k_similar_docs, reset_querying_output_log, display_llm_response
+from indexingUtils import (
+    is_github_url_valid,
+    clone_repository,
+    index_repo_files_and_functions,
+    reset_indexing_output_log,
+)
+from queryUtils import (
+    display_top_k_similar_docs,
+    reset_querying_output_log,
+    display_llm_response,
+    display_top_k_similar_docs_tfidf,
+)
 
 # Example usage: Input a valid URL in the text box. Eg: "https://github.com/kanvk/CodeRECAP.git"
 
+
 def hello_world(name):
     return f"Hello, {name}!"
+
 
 def index_repo(url):
     reset_indexing_output_log()
@@ -26,10 +38,14 @@ def query_repo(query_text):
     reset_querying_output_log()
     # Vector similarity for functions
     display_top_k_similar_docs(
-        st.session_state.functions_vector_store, query_text, 5, "function")
+        st.session_state.functions_vector_store, query_text, 5, "function"
+    )
     # Vector similarity for files
     display_top_k_similar_docs(
-        st.session_state.files_vector_store, query_text, 5, "file")
+        st.session_state.files_vector_store, query_text, 5, "file"
+    )
+    # TF-IDF similarity for files
+    display_top_k_similar_docs_tfidf(query_text, 5, "file")
     # LLM Query
     display_llm_response(query_text)
 
@@ -59,7 +75,7 @@ def main():
     st.header("Index Repository")
     repo_url = st.text_input("Enter the URL to the git repo to be analyzed")
     # Trigger index_repo function when button is clicked or Enter is pressed
-    if st.button("Index Now"):
+    if st.button("Index"):
         if repo_url:
             index_repo(repo_url)
     st.write(st.session_state.indexing_log)
@@ -68,7 +84,7 @@ def main():
     st.header("Query Repository")
     query_text = st.text_input("Enter your Query")
     # Trigger query_repo function when button is clicked or Enter is pressed
-    if st.button("Query Now"):
+    if st.button("Query"):
         if query_text:
             query_repo(query_text)
     st.write(st.session_state.querying_log)

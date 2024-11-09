@@ -2,19 +2,21 @@ import os
 from azure.ai.inference import ChatCompletionsClient
 from azure.ai.inference.models import SystemMessage, UserMessage
 from azure.core.credentials import AzureKeyCredential
+from dotenv import load_dotenv
 
-llama_model_name = "Meta-Llama-3.1-8B-Instruct"
+
+load_dotenv()
+
+
+AZURE_INFERENCE_CREDENTIAL = os.getenv("AZURE_INFERENCE_CREDENTIAL")
+ENDPOINT = "https://models.inference.ai.azure.com"
+MODEL_NAME = "gpt-4o"
 
 
 def get_azure_chat_client():
-    endpoint = "https://models.inference.ai.azure.com"
-    token = os.getenv("AZURE_INFERENCE_CREDENTIAL")
-    if not token:
-        raise ValueError(
-            "Please set the environment variable 'AZURE_INFERENCE_CREDENTIAL'.")
     client = ChatCompletionsClient(
-        endpoint=endpoint,
-        credential=AzureKeyCredential(token),
+        endpoint=ENDPOINT,
+        credential=AzureKeyCredential(AZURE_INFERENCE_CREDENTIAL),
     )
     return client
 
@@ -24,13 +26,14 @@ def get_azure_llm_response(azure_client, model_name, user_prompt):
         response = azure_client.complete(
             messages=[
                 SystemMessage(
-                    content="You are a helpful assistant who is great at analyzing code repositories. You must answer all user queries by analyzing the factual information and code shared in the query."),
+                    content="You are an expert code assistant for analyzing, summarizing, and locating elements within code repositories. Follow the user's instructions exactly, using only the provided information to deliver precise, concise answers. Avoid creating new information or making assumptions beyond the context given."
+                ),
                 UserMessage(content=user_prompt),
             ],
             temperature=1.0,
             top_p=1.0,
             max_tokens=1024,
-            model=model_name
+            model=model_name,
         )
         if response.choices:
             return response.choices[0].message.content

@@ -4,7 +4,12 @@ from git import Repo
 import streamlit as st
 from identifyFunctions import get_function_info
 from storeFunctions import create_database, insert_function_data
-from vectorizeCode import create_documents_from_code_infos, save_to_faiss_vector_store, UniXcoderEmbeddings
+from vectorizeCode import (
+    create_documents_from_code_infos,
+    save_to_faiss_vector_store,
+    UniXcoderEmbeddings,
+)
+from tfidf import vectorize_documents_tfidf
 
 
 def update_indexing_output_log(msg, append=True):
@@ -30,8 +35,7 @@ def is_github_url_valid(repo_url):
     try:
         response = requests.get(repo_url)
         if response.status_code == 200:
-            update_indexing_output_log(
-                f"The repository URL {repo_url} is valid.")
+            update_indexing_output_log(f"The repository URL {repo_url} is valid.")
             return True
         elif response.status_code == 404:
             update_indexing_output_log(
@@ -72,9 +76,7 @@ def clone_repository(repo_url, branch=None, commit_hash=None):
         if branch:
             repo = Repo(clone_dir)
             repo.git.checkout(branch)
-            update_indexing_output_log(
-                f"Checked out to branch {branch} in {clone_dir}"
-            )
+            update_indexing_output_log(f"Checked out to branch {branch} in {clone_dir}")
         # if a commit_hash is passed as arguments to the method, checkout to that commit_hash
         if commit_hash:
             repo = Repo(clone_dir)
@@ -103,7 +105,8 @@ def analyze_python_files(clone_dir):
                     # Add all python files into a global list
                     if code:
                         file_infos.append(
-                            {"file_path": file_path, "name": file, "code_snippet": code})
+                            {"file_path": file_path, "name": file, "code_snippet": code}
+                        )
                     function_info = get_function_info(code)
                     for info in function_info:
                         # Add the file path to each function's information
@@ -119,8 +122,7 @@ def analyze_python_files(clone_dir):
 def index_repo_files_and_functions(repo_name, clone_dir):
     # Create a database with the repo_name
     create_database(db_name=repo_name)
-    update_indexing_output_log(
-        f"Indexing repository: {repo_name} found at {clone_dir}")
+    update_indexing_output_log(f"Indexing repository: {repo_name} found at {clone_dir}")
     # Analyze Python files and get function details like start line no, end line no, arguments, etc
     function_infos = analyze_python_files(clone_dir)
     # Insert function data into the database
@@ -135,19 +137,26 @@ def index_repo_files_and_functions(repo_name, clone_dir):
                 f"Positional Args: {info['positional_arguments']}, Varlen Keyword Args: {info['varlen_keyword_arguments']}"
             )
     else:
-        update_indexing_output_log(
-            "No Python functions found in the repository.")
+        update_indexing_output_log("No Python functions found in the repository.")
     # Vectorize functions and files and save in vector stores
     unixcoder_embedding_model = UniXcoderEmbeddings(
-        model_name="microsoft/unixcoder-base")
-    function_docs = create_documents_from_code_infos(
-        st.session_state.function_infos)
+        model_name="microsoft/unixcoder-base"
+    )
+    function_docs = create_documents_from_code_infos(st.session_state.function_infos)
     file_docs = create_documents_from_code_infos(st.session_state.file_infos)
+
+    st.session_state.tfidf_matrix, st.session_state.tfidf_vectorizer = (
+        vectorize_documents_tfidf(st.session_state.file_infos)
+    )
     st.session_state.functions_vector_store = save_to_faiss_vector_store(
-        f"vector_stores/{repo_name}/functions_index", function_docs, unixcoder_embedding_model)
+        f"vector_stores/{repo_name}/functions_index",
+        function_docs,
+        unixcoder_embedding_model,
+    )
     update_indexing_output_log(
-        f"Identified and indexed {len(function_docs)} functions.")
+        f"Identified and indexed {len(function_docs)} functions."
+    )
     st.session_state.files_vector_store = save_to_faiss_vector_store(
-        f"vector_stores/{repo_name}/files_index", file_docs, unixcoder_embedding_model)
-    update_indexing_output_log(
-        f"Identified and indexed {len(file_docs)} python files.")
+        f"vector_stores/{repo_name}/files_index", file_docs, unixcoder_embedding_model
+    )
+    update_indexing_output_log(f"Identified and indexed {len(file_docs)} python files.")
