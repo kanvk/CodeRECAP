@@ -1,6 +1,7 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+
 # Document vectorization
 def vectorize_documents_tfidf(file_infos):
     # Initialize TfidfVectorizer
@@ -19,11 +20,13 @@ def search_tfidf(query, vectorizer, tfidf_matrix, file_infos, k):
 
     query_tfidf = vectorizer.transform([query])
     cosine_similarities = cosine_similarity(query_tfidf, tfidf_matrix).flatten()
-    
+
     # Get file names in descending order of similarity without returning similarity scores
-    results = sorted(zip(file_names, cosine_similarities), key=lambda x: x[1], reverse=True)
+    results = sorted(
+        zip(file_names, cosine_similarities), key=lambda x: x[1], reverse=True
+    )
     ranked_file_names = [file_name for file_name, _ in results[:k]]
-    
+
     return ranked_file_names
 
 
@@ -31,7 +34,7 @@ def search_tfidf(query, vectorizer, tfidf_matrix, file_infos, k):
 # def load_files_from_directory(directory):
 #     file_contents = []
 #     filenames = []
-#     
+#
 #     for filename in os.listdir(directory):
 #         if filename.endswith(".py"):
 #             with open(os.path.join(directory, filename), "r") as file:
