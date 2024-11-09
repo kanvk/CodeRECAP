@@ -165,3 +165,4 @@ cloned_repos
 vector_stores
 *.db
 junit
+.env
