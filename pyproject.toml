@@ -5,6 +5,7 @@ description = "Repository Context Aware Source Code Summarization"
 authors = ["Kanv Khare <kkhare@ncsu.edu>, Adithya Kiran <akiran2@ncsu.edu>, Sogolsadat Mansouri <smansou2@ncsu.edu>, Ziad Hassan <zmohame2@ncsu.edu>"]
 license = "MIT License"
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
