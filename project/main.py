@@ -57,7 +57,14 @@ def query_repo(query_text):
     # TF-IDF similarity for files
     display_top_k_similar_docs_tfidf(query_text, 5, "file")
     # LLM Query
-    display_llm_response(query_text)
+    #display_llm_response(query_text)
+
+def run_swe_bench_evaluation():
+    try:
+        evaluation_results = swebench_evaluate()
+        st.session_state.swebench_log = evaluation_results
+    except Exception as e:
+        st.session_state.swebench_log = f"Error during SWE-Bench evaluation: {str(e)}"
 
 
 def main():
@@ -81,6 +88,8 @@ def main():
     if "querying_log" not in st.session_state:
         st.session_state.querying_log = ""
 
+    if "swebench_log" not in st.session_state:
+        st.session_state.swebench_log = ""
     # Index Repo Section
     st.header("Index Repository")
     repo_url = st.text_input("Enter the URL to the git repo to be analyzed")
