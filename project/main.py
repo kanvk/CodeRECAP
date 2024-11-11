@@ -1,7 +1,7 @@
 import streamlit as st
 from indexingUtils import is_github_url_valid, clone_repository, index_repo_files_and_functions, reset_indexing_output_log
 from queryUtils import display_top_k_similar_docs, reset_querying_output_log, display_llm_response
-
+from swebench import swebench_evaluate
 # Example usage: Input a valid URL in the text box. Eg: "https://github.com/kanvk/CodeRECAP.git"
 
 def hello_world(name):
@@ -31,7 +31,14 @@ def query_repo(query_text):
     display_top_k_similar_docs(
         st.session_state.files_vector_store, query_text, 5, "file")
     # LLM Query
-    display_llm_response(query_text)
+    #display_llm_response(query_text)
+
+def run_swe_bench_evaluation():
+    try:
+        evaluation_results = swebench_evaluate()
+        st.session_state.swebench_log = evaluation_results
+    except Exception as e:
+        st.session_state.swebench_log = f"Error during SWE-Bench evaluation: {str(e)}"
 
 
 def main():
@@ -55,6 +62,8 @@ def main():
     if "querying_log" not in st.session_state:
         st.session_state.querying_log = ""
 
+    if "swebench_log" not in st.session_state:
+        st.session_state.swebench_log = ""
     # Index Repo Section
     st.header("Index Repository")
     repo_url = st.text_input("Enter the URL to the git repo to be analyzed")
@@ -73,6 +82,10 @@ def main():
             query_repo(query_text)
     st.write(st.session_state.querying_log)
 
+    st.header("Evaluate with SWE-Bench")
+    if st.button("Run SWE-Bench Evaluation"):
+        run_swe_bench_evaluation()
+    st.write(st.session_state.swebench_log)
 
 if __name__ == "__main__":
     main()
