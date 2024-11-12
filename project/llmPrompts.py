@@ -14,7 +14,7 @@ function_summary_template = PromptTemplate(
         1. The purpose of the function.
         2. The inputs it takes, including parameter types.
         3. The output it returns.
-        4. Any specific logic or steps it follows to achieve its result."""
+        4. Any specific logic or steps it follows to achieve its result.""",
 )
 
 file_summary_template = PromptTemplate(
@@ -33,7 +33,7 @@ file_summary_template = PromptTemplate(
         3. Important dependencies or imports and how they are used.
         4. Any notable logic, algorithms, or specific steps followed in the code.
         5. If applicable, how this file interacts with or depends on other files in the project.
-    """
+    """,
 )
 
 file_summary_from_function_summary_template = PromptTemplate(
@@ -53,7 +53,7 @@ file_summary_from_function_summary_template = PromptTemplate(
         2. The main classes, functions, or modules defined within it, along with their roles.
         3. Important dependencies or imports and how they are used.
         4. Any notable logic, algorithms, or specific steps followed in the code.
-        5. If applicable, how this file interacts with or depends on other files in the project."""
+        5. If applicable, how this file interacts with or depends on other files in the project.""",
 )
 
 repo_summary_from_file_summary_template = PromptTemplate(
@@ -72,12 +72,11 @@ repo_summary_from_file_summary_template = PromptTemplate(
         1. The overall purpose of the repository.
         2. The main classes, functions, or modules defined within it, along with their roles.
         3. Any notable logic, algorithms, or specific steps followed in the code.
-    """
+    """,
 )
 
 code_location_template = PromptTemplate(
-    input_variables=["repo_name", "files_list",
-                     "files_info", "functions_info"],
+    input_variables=["repo_name", "files_list", "files_info", "functions_info"],
     template="""
         The repository {repo_name} contains the following files:
         {files_list}
@@ -94,5 +93,5 @@ code_location_template = PromptTemplate(
         2. Do not provide an explaination. Just return the file name
         3. if you cannot answer users query reply with "UNABLE TO ANSWER".
 
-    """
+    """,
 )

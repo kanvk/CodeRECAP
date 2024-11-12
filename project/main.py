@@ -1,11 +1,22 @@
 import streamlit as st
-from indexingUtils import is_github_url_valid, clone_repository, index_repo_files_and_functions, reset_indexing_output_log
-from queryUtils import display_top_k_similar_docs, reset_querying_output_log, display_llm_response
+from indexingUtils import (
+    is_github_url_valid,
+    clone_repository,
+    index_repo_files_and_functions,
+    reset_indexing_output_log,
+)
+from queryUtils import (
+    display_top_k_similar_docs,
+    reset_querying_output_log,
+    display_llm_response,
+)
 
 # Example usage: Input a valid URL in the text box. Eg: "https://github.com/kanvk/CodeRECAP.git"
 
+
 def hello_world(name):
     return f"Hello, {name}!"
+
 
 def index_repo(url):
     reset_indexing_output_log()
@@ -26,10 +37,12 @@ def query_repo(query_text):
     reset_querying_output_log()
     # Vector similarity for functions
     display_top_k_similar_docs(
-        st.session_state.functions_vector_store, query_text, 5, "function")
+        st.session_state.functions_vector_store, query_text, 5, "function"
+    )
     # Vector similarity for files
     display_top_k_similar_docs(
-        st.session_state.files_vector_store, query_text, 5, "file")
+        st.session_state.files_vector_store, query_text, 5, "file"
+    )
     # LLM Query
     display_llm_response(query_text)
 
