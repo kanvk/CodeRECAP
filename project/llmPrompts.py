@@ -60,7 +60,7 @@ file_summary_from_function_summary_template = PromptTemplate(
         1. **Overall Purpose**: Describe the main purpose of this file within the project, explaining what it aims to achieve or the functionality it provides.
         2. **Primary Components**: Identify and briefly describe any main classes, functions, or modules in the file, including their roles and interconnections, especially based on the provided function summaries.
         3. **Dependencies and Imports**: Mention any external libraries, packages, or modules imported in this file, explaining their relevance and usage in the code.
-        4. **Key Logic and Algorithms**: Summarize any notable algorithms, logic, or structural patterns, including how they work and contribute to the file’s functionality.
+        4. **Key Logic and Algorithms**: Summarize any notable algorithms, logic, or structural patterns, including how they work and contribute to the file's functionality.
         5. **Project Integration**: If relevant, outline how this file interacts with other parts of the project or other files, focusing on function calls, data exchanges, or inheritance that might be involved.
 
         Structure your response in a clear, concise format (preferably bullet points or short paragraphs), allowing developers to quickly understand this file's purpose, components, and relationships within the codebase.
@@ -84,8 +84,8 @@ repo_summary_from_file_summary_template = PromptTemplate(
         In your summary, include:
         1. **Overall Purpose**: Describe the main purpose of this repository, explaining the functionality it provides or the problem it addresses.
         2. **Primary Components**: Identify the main classes, functions, or modules across the files in the repository, detailing their roles and how they contribute to the repository's purpose, based on the provided file summaries.
-        3. **Notable Logic and Algorithms**: Highlight any significant logic, algorithms, or design patterns present in the code, particularly if they’re central to the repository’s functionality or problem-solving approach.
-        4. **Project Structure and Relationships**: Explain any noteworthy structure in the repository, such as dependencies between files, common data flows, or how modules interact with each other to accomplish the project’s goals.
+        3. **Notable Logic and Algorithms**: Highlight any significant logic, algorithms, or design patterns present in the code, particularly if they're central to the repository's functionality or problem-solving approach.
+        4. **Project Structure and Relationships**: Explain any noteworthy structure in the repository, such as dependencies between files, common data flows, or how modules interact with each other to accomplish the project's goals.
 
         Present your response in a structured, concise format, using bullet points or short paragraphs to make it easy to read and understand the key aspects of the repository.
     """,
