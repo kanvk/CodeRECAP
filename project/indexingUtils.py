@@ -38,7 +38,8 @@ def is_github_url_valid(repo_url):
     try:
         response = requests.get(repo_url)
         if response.status_code == 200:
-            update_indexing_output_log(f"The repository URL {repo_url} is valid.")
+            update_indexing_output_log(
+                f"The repository URL {repo_url} is valid.")
             return True
         elif response.status_code == 404:
             update_indexing_output_log(
@@ -130,7 +131,8 @@ def analyze_python_files(clone_dir):
 def index_repo_files_and_functions(repo_name, clone_dir):
     # Create a database with the repo_name
     create_database(db_name=repo_name)
-    update_indexing_output_log(f"Indexing repository: {repo_name} found at {clone_dir}")
+    update_indexing_output_log(
+        f"Indexing repository: {repo_name} found at {clone_dir}")
     # Analyze Python files and get function details like start line no, end line no, arguments, etc
     file_infos, files_list, function_infos = analyze_python_files(clone_dir)
     # Insert function data into the database
@@ -147,7 +149,8 @@ def index_repo_files_and_functions(repo_name, clone_dir):
                 f"Positional Args: {info['positional_arguments']}, Varlen Keyword Args: {info['varlen_keyword_arguments']}"
             )
     else:
-        update_indexing_output_log("No Python functions found in the repository.")
+        update_indexing_output_log(
+            "No Python functions found in the repository.")
     # Vectorize functions and files and save in vector stores
     unixcoder_embedding_model = UniXcoderEmbeddings(
         model_name="microsoft/unixcoder-base"
