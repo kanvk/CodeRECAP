@@ -5,6 +5,7 @@ from indexingUtils import (
     index_repo_files_and_functions,
     reset_indexing_output_log,
 )
+import indexingUtils
 from queryUtils import (
     display_top_k_similar_docs,
     reset_querying_output_log,
@@ -89,8 +90,8 @@ def main():
             query_repo(query_text)
     st.write(st.session_state.querying_log)
 
-
 if __name__ == "__main__":
+    indexingUtils.streamlit_log = True
     main()
 
 # Example usage: Input a valid URL in the text box, optionally followed by a branch or a hash. Eg: "https://github.com/kanvk/CodeRECAP.git branch:main"

@@ -10,6 +10,7 @@ def update_querying_output_log(msg, append=True):
         st.session_state["querying_log"] += "  \n" + msg
     else:
         st.session_state["querying_log"] = msg
+    print(msg)
 
 
 def reset_querying_output_log():
