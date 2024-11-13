@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 from indexingUtils import (
     is_github_url_valid,
     clone_repository,
@@ -13,6 +14,14 @@ from queryUtils import (
     display_top_k_similar_docs_tfidf,
 )
 
+from swebenchUtils import (
+    locate_files
+)
+
+from benchmark import (
+    get_swebench_dataset
+)
+
 # Example usage: Input a valid URL in the text box. Eg: "https://github.com/kanvk/CodeRECAP.git"
 
 
@@ -20,14 +29,14 @@ def hello_world(name):
     return f"Hello, {name}!"
 
 
-def index_repo(url):
+def index_repo(url, commit_hash=None):
     reset_indexing_output_log()
     # Check if url is valid
     if not is_github_url_valid(url):
         return
     # Clone the repo if its valid
     try:
-        repo_name, cloned_dir = clone_repository(repo_url=url)
+        repo_name, cloned_dir = clone_repository(repo_url=url, commit_hash=commit_hash)
         st.session_state.repo_name = repo_name
     except Exception:
         return
@@ -89,6 +98,33 @@ def main():
         if query_text:
             query_repo(query_text)
     st.write(st.session_state.querying_log)
+
+    # Testing
+    st.header("Perform Testing")
+    if st.button("Test"):
+        swebench_df = get_swebench_dataset()
+        swebench_df['prediction'] = None
+
+        # Group the DataFrame by 'repo'
+        grouped = swebench_df.groupby('repo')
+        for repo_name, group_data in grouped:
+            print(f"Processing repo: {repo_name}")
+            for _, row in group_data.iterrows():
+                repo_url = f"https://github.com/{row['repo']}"
+                res = locate_files(repo_url, row['base_commit'], row['problem_statement'], row.get("hints_text"))
+
+                # Process the modified_files for each row
+                modified_files = [os.path.basename(file) for file in row['modified_files']] if isinstance(row['modified_files'], list) else row['modified_files']
+                
+                # Check if the prediction is in modified_files
+                if res in modified_files:
+                    row['prediction'] = True
+                else:
+                    row['prediction'] = False
+        
+        # After processing, store the DataFrame to a CSV file
+        swebench_df.to_csv('swebench_predictions.csv', index=False)
+        
 
 if __name__ == "__main__":
     indexingUtils.streamlit_log = True
