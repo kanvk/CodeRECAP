@@ -1,3 +1,5 @@
+import streamlit as st
+import os
 from indexingUtils import clone_repository, analyze_python_files
 from azureClient import get_azure_chat_client, get_azure_llm_response, MODEL_NAME
 from llmPrompts import code_location_template
@@ -8,6 +10,8 @@ def locate_files(repo_url, commit_hash, problem_description, hints):
     # create_database(db_name=repo_name)
     # identify files and functions
     file_infos, files_list, function_infos = analyze_python_files(clone_dir)
+    file_names = [os.path.basename(file_path) for file_path in files_list]
+
     print(f"Identified {len(function_infos)} functions and {len(file_infos)} files.")
     chat_client = get_azure_chat_client()
     if len(function_infos)>1000:
@@ -22,8 +26,7 @@ def locate_files(repo_url, commit_hash, problem_description, hints):
         query = f"{query} Hints for solving the problem: {hints}"
     prompt = code_location_template.format(
         repo_name=repo_name,
-        files_list=files_list,
-        files_info=file_infos,
+        files_list=file_names,
         functions_info=functions_info,
         query=query,
     )
