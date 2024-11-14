@@ -1,27 +1,7 @@
 import streamlit as st
-import os
-from indexingUtils import (
-    is_github_url_valid,
-    clone_repository,
-    index_repo_files_and_functions,
-    reset_indexing_output_log,
-)
-import indexingUtils
-from queryUtils import (
-    display_top_k_similar_docs,
-    reset_querying_output_log,
-    display_llm_response,
-    display_top_k_similar_docs_tfidf,
-)
-
-from swebenchUtils import (
-    locate_files
-)
-
-from benchmark import (
-    get_swebench_dataset
-)
-
+from indexingUtils import is_github_url_valid, clone_repository, index_repo_files_and_functions, reset_indexing_output_log
+from queryUtils import display_top_k_similar_docs, reset_querying_output_log, display_llm_response
+from swebench import swebench_evaluate
 # Example usage: Input a valid URL in the text box. Eg: "https://github.com/kanvk/CodeRECAP.git"
 
 
@@ -108,35 +88,10 @@ def main():
             query_repo(query_text)
     st.write(st.session_state.querying_log)
 
-    # Testing
-    st.header("Perform Testing")
-    if st.button("Test"):
-        swebench_df = get_swebench_dataset()
-        swebench_df['prediction'] = None
-
-        # Group the DataFrame by 'repo'
-        grouped = swebench_df.groupby('repo')
-        for repo_name, group_data in grouped:
-            print(f"Processing repo: {repo_name}")
-            for idx, row in group_data.iterrows():
-                repo_url = f"https://github.com/{row['repo']}"
-                results = locate_files(repo_url, row['base_commit'], row['problem_statement'], row.get("hints_text"))
-
-                # Process the modified_files for each row
-                modified_files = [os.path.basename(file) for file in row['modified_files']] if isinstance(row['modified_files'], list) else row['modified_files']
-                
-                # Check if the prediction is in modified_files
-                prediction = 'False'  # Default to 'False'
-                for result in results:
-                    if result in modified_files:
-                        prediction = 'True'
-                        break
-                
-                swebench_df.loc[idx, 'prediction'] = prediction
-        
-        # After processing, store the DataFrame to a CSV file
-        swebench_df.to_csv('swebench_predictions.csv', index=False)
-        
+    st.header("Evaluate with SWE-Bench")
+    if st.button("Run SWE-Bench Evaluation"):
+        run_swe_bench_evaluation()
+    st.write(st.session_state.swebench_log)
 
 if __name__ == "__main__":
     indexingUtils.streamlit_log = True
