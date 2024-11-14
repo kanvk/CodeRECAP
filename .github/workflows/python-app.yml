@@ -41,3 +41,9 @@ jobs:
           
             #streamlit run project/main.py
             pip install pytest pytest-cov
+      
+      - name: Run SWE-Bench Dataset Tests
+        env:
+          HF_HOME: /tmp/transformers_cache  # Optional caching for Hugging Face datasets
+        run: |
+          python test.py
