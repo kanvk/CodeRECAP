@@ -109,18 +109,21 @@ def main():
         grouped = swebench_df.groupby('repo')
         for repo_name, group_data in grouped:
             print(f"Processing repo: {repo_name}")
-            for _, row in group_data.iterrows():
+            for idx, row in group_data.iterrows():
                 repo_url = f"https://github.com/{row['repo']}"
-                res = locate_files(repo_url, row['base_commit'], row['problem_statement'], row.get("hints_text"))
+                results = locate_files(repo_url, row['base_commit'], row['problem_statement'], row.get("hints_text"))
 
                 # Process the modified_files for each row
                 modified_files = [os.path.basename(file) for file in row['modified_files']] if isinstance(row['modified_files'], list) else row['modified_files']
                 
                 # Check if the prediction is in modified_files
-                if res in modified_files:
-                    row['prediction'] = True
-                else:
-                    row['prediction'] = False
+                prediction = 'False'  # Default to 'False'
+                for result in results:
+                    if result in modified_files:
+                        prediction = 'True'
+                        break
+                
+                swebench_df.loc[idx, 'prediction'] = prediction
         
         # After processing, store the DataFrame to a CSV file
         swebench_df.to_csv('swebench_predictions.csv', index=False)
