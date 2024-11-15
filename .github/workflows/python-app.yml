@@ -41,6 +41,10 @@ jobs:
       #   run: |
       #     export AZURE_INFERENCE_CREDENTIAL=${{ secrets.AZURE_INFERENCE_CREDENTIAL }}
       #     poetry run pytest --cov=project
+      - name: Install dependencies with Poetry
+        run: |
+          poetry install
+          poetry add datasets 
         
       - name: Run SWE-Bench Dataset Tests
         env:
