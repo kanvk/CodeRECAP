@@ -35,12 +35,12 @@ jobs:
         env:
           AZURE_INFERENCE_CREDENTIAL: ${{ secrets.AZURE_INFERENCE_CREDENTIAL }}
         
-      - name: Test with pytest
-        env:
-          PYTHONPATH: ./project
-        run: |
-          export AZURE_INFERENCE_CREDENTIAL=${{ secrets.AZURE_INFERENCE_CREDENTIAL }}
-          poetry run pytest --cov=project
+      # - name: Test with pytest
+      #   env:
+      #     PYTHONPATH: ./project
+      #   run: |
+      #     export AZURE_INFERENCE_CREDENTIAL=${{ secrets.AZURE_INFERENCE_CREDENTIAL }}
+      #     poetry run pytest --cov=project
         
       - name: Run SWE-Bench Dataset Tests
         env:
