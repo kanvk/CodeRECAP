@@ -60,4 +60,4 @@ jobs:
           HF_HOME: /tmp/transformers_cache  # Optional caching for Hugging Face datasets
           PYTHONPATH: ./project 
         run: |
-          poetry run python tests/test.py
+          poetry run python tests/test_main.py
