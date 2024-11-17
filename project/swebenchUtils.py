@@ -1,8 +1,8 @@
 import streamlit as st
 import os
-from indexingUtils import clone_repository, analyze_python_files, index_repo_files_and_functions
-from azureClient import get_azure_chat_client, get_azure_llm_response, MODEL_NAME
-from llmPrompts import code_location_template
+from project.indexingUtils import clone_repository, analyze_python_files, index_repo_files_and_functions
+from project.azureClient import get_azure_chat_client, get_azure_llm_response, MODEL_NAME
+from project.llmPrompts import code_location_template
 
 def locate_files(repo_name, problem_description, hints, files_list):
     # clone repo at commit

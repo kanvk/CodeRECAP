@@ -10,12 +10,12 @@ import pandas as pd
 import sys
 import os
 
-# Add the project directory to sys.path
-project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../project'))
-sys.path.insert(0, project_path)
+# # Add the project directory to sys.path
+# project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../project'))
+# sys.path.insert(0, project_path)
 
-from indexingUtils import is_github_url_valid, clone_repository, index_repo_files_and_functions, reset_indexing_output_log
-from queryUtils import display_top_k_similar_docs, reset_querying_output_log, display_llm_response
+from project.indexingUtils import * #is_github_url_valid, clone_repository, index_repo_files_and_functions, reset_indexing_output_log
+from project.queryUtils import * #display_top_k_similar_docs, reset_querying_output_log, display_llm_response
 
 
 def get_modified_files(patch: str):

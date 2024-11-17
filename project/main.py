@@ -6,15 +6,15 @@ from indexingUtils import (
     index_repo_files_and_functions,
     reset_indexing_output_log,
 )
-import indexingUtils
-from queryUtils import (
+import project.indexingUtils
+from project.queryUtils import (
     display_top_k_similar_docs,
     reset_querying_output_log,
     display_llm_response,
     display_top_k_similar_docs_tfidf,
 )
 
-from swebenchUtils import (
+from project.swebenchUtils import (
     locate_files,
     sweBenchCloneAndQuery
 )
