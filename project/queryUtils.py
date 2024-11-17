@@ -1,9 +1,9 @@
 import streamlit as st
 import os
-from vectorizeCode import search_vector_store
-from azureClient import get_azure_chat_client, get_azure_llm_response, MODEL_NAME
-from llmPrompts import code_location_template
-from tfidf import search_tfidf
+from project.vectorizeCode import search_vector_store
+from project.azureClient import get_azure_chat_client, get_azure_llm_response, MODEL_NAME
+from project.llmPrompts import code_location_template
+from project.tfidf import search_tfidf
 
 
 def update_querying_output_log(msg, append=True):

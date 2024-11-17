@@ -2,8 +2,8 @@ from datasets import load_dataset
 import os
 import pandas as pd
 import streamlit as st
-from indexingUtils import is_github_url_valid, clone_repository, index_repo_files_and_functions, reset_indexing_output_log
-from queryUtils import display_top_k_similar_docs, reset_querying_output_log, display_llm_response
+from project.indexingUtils import is_github_url_valid, clone_repository, index_repo_files_and_functions, reset_indexing_output_log
+from project.queryUtils import display_top_k_similar_docs, reset_querying_output_log, display_llm_response
 
 def index_repo(url):
     reset_indexing_output_log()
