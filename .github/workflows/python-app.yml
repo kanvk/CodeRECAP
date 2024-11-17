@@ -58,6 +58,6 @@ jobs:
       - name: Run SWE-Bench Dataset Tests
         env:
           HF_HOME: /tmp/transformers_cache  # Optional caching for Hugging Face datasets
-          PYTHONPATH: ./project 
+          PYTHONPATH: .
         run: |
           poetry run python tests/test_main.py
