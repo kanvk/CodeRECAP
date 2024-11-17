@@ -15,7 +15,8 @@ from queryUtils import (
 )
 
 from swebenchUtils import (
-    locate_files
+    locate_files,
+    sweBenchCloneAndQuery
 )
 
 from testing import (
