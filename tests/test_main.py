@@ -1,12 +1,11 @@
-import os
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import pandas as pd
+import os
 from datasets import load_dataset
-from project.indexingUtils import clone_repository, is_github_url_valid
 from project.queryUtils import sweBenchCloneAndQuery  # Assuming this function exists
 
-# Assuming other necessary imports and utility functions
-
 def get_modified_files(patch: str):
+    # Function to extract modified files from the patch
     modified_files = []
     for line in patch.splitlines():
         if line.startswith('diff --git'):
@@ -20,7 +19,7 @@ def get_swebench_dataset() -> pd.DataFrame:
     ds = load_dataset('princeton-nlp/SWE-bench_Verified')
     df = pd.DataFrame(ds['test'])
     df['modified_files'] = df['patch'].apply(get_modified_files)
-    df = df[['repo', 'base_commit', 'modified_files', 'problem_statement', 'hints_text']]
+    df = df[['repo', 'base_commit', 'modified_files', 'problem_statement', 'hints_text', 'ground_truth_label']]  # Assuming there's a ground truth column
     return df
 
 def run_testing_on_all_patches():
