@@ -46,10 +46,10 @@ jobs:
         env:
          PYTHONPATH: ./project
         run: |
-            # Export the Azure credential environment variable for this step
+            
             export AZURE_INFERENCE_CREDENTIAL=${{ secrets.AZURE_INFERENCE_CREDENTIAL }}
           
-            #streamlit run project/main.py
+            
             pip install pytest pytest-cov
 
             - name: Test with pytest
