@@ -22,19 +22,21 @@ jobs:
       # Display the Python version (optional)
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
-
-      # Install Poetry
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
           export PATH="$HOME/.local/bin:$PATH"
-
-      # Install dependencies with Poetry
+          
       - name: Install dependencies with Poetry
         run: |
           poetry install
-
-      # Verify Azure Secret Access
+          
+      - name: Check and Install Streamlit if Missing
+        run: |
+          if ! poetry show streamlit; then
+            poetry add streamlit
+          fi
+      
       - name: Verify Secret Access
         run: echo "Secret is set"
         env:
