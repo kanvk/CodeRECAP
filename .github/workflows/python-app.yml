@@ -4,68 +4,60 @@ on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the code
       - uses: actions/checkout@v4
+
+      # Auto-format code using autopep8
       - uses: creyD/action_autopep8@v3.1
+
+      # Set up Python
       - name: Set up Python
-        # This is the version of the action for setting up Python, not the Python version.
         uses: actions/setup-python@v5
         with:
-          # Semantic version range syntax or exact version of a Python version
           python-version: '3.x'
-          # Optional - x64 or x86 architecture, defaults to x64
-          #architecture: 'x64'
-      # You can test your matrix by printing the current Python version
+
+      # Display the Python version (optional)
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
+
+      # Install Poetry
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
           export PATH="$HOME/.local/bin:$PATH"
-          
+
+      # Install dependencies with Poetry
       - name: Install dependencies with Poetry
         run: |
           poetry install
-          
-      - name: Check and Install Streamlit if Missing
-        run: |
-          if ! poetry show streamlit; then
-            poetry add streamlit
-          fi
-      
+
+      # Verify Azure Secret Access
       - name: Verify Secret Access
         run: echo "Secret is set"
         env:
           AZURE_INFERENCE_CREDENTIAL: ${{ secrets.AZURE_INFERENCE_CREDENTIAL }}
-        
-      
+
+      # Run tests with pytest and pytest-cov
       - name: Test with pytest
         env:
-         PYTHONPATH: ./project
+          PYTHONPATH: ./project
+          AZURE_INFERENCE_CREDENTIAL: ${{ secrets.AZURE_INFERENCE_CREDENTIAL }}
         run: |
-            
-            export AZURE_INFERENCE_CREDENTIAL=${{ secrets.AZURE_INFERENCE_CREDENTIAL }}
-          
-            
-            pip install pytest pytest-cov
+          pip install pytest pytest-cov
+          poetry run pytest --cov=project
 
-            - name: Test with pytest
-            env:
-              PYTHONPATH: ./project
-            run: |
-              
-              poetry run pytest --cov=project
-      - name: Install dependencies with Poetry
+      # Install additional datasets library for SWE-Bench
+      - name: Install SWE-Bench dependencies
         run: |
-            poetry install
-            poetry add datasets 
-            
+          poetry add datasets
+
+      # Run SWE-Bench Dataset Tests
       - name: Run SWE-Bench Dataset Tests
         env:
           HF_HOME: /tmp/transformers_cache  # Optional caching for Hugging Face datasets
           PYTHONPATH: ./project 
         run: |
-              poetry run python tests/test.py
+          poetry run python tests/test.py
