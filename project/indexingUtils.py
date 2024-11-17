@@ -2,14 +2,14 @@ import os
 import requests
 from git import Repo
 import streamlit as st
-from identifyFunctions import get_function_info
-from storeFunctions import create_database, insert_function_data
-from vectorizeCode import (
+from project.identifyFunctions import get_function_info
+from project.storeFunctions import create_database, insert_function_data
+from project.vectorizeCode import (
     create_documents_from_code_infos,
     save_or_update_faiss_vector_store,
     UniXcoderEmbeddings,
 )
-from tfidf import vectorize_documents_tfidf
+from project.tfidf import vectorize_documents_tfidf
 
 streamlit_log = False
 
