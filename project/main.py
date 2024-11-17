@@ -44,20 +44,24 @@ def index_repo(url, commit_hash=None):
     index_repo_files_and_functions(repo_name, cloned_dir)
 
 
-def query_repo(query_text):
+def query_repo(query_text, k = 5, display = True):
     reset_querying_output_log()
     # Vector similarity for functions
-    display_top_k_similar_docs(
-        st.session_state.functions_vector_store, query_text, 5, "function"
-    )
+    #function_results = display_top_k_similar_docs(
+    #    st.session_state.functions_vector_store, query_text, k, "function", display
+    #)
     # Vector similarity for files
-    display_top_k_similar_docs(
-        st.session_state.files_vector_store, query_text, 5, "file"
+    file_results = display_top_k_similar_docs(
+        st.session_state.files_vector_store, query_text, k, "file", display
     )
     # TF-IDF similarity for files
-    display_top_k_similar_docs_tfidf(query_text, 5, "file")
+    tfidf_results = display_top_k_similar_docs_tfidf(
+        query_text, k, "file", display
+    )
     # LLM Query
     display_llm_response(query_text)
+    
+    return file_results, tfidf_results
 
 
 def main():
@@ -111,7 +115,19 @@ def main():
             print(f"Processing repo: {repo_name}")
             for idx, row in group_data.iterrows():
                 repo_url = f"https://github.com/{row['repo']}"
-                results = locate_files(repo_url, row['base_commit'], row['problem_statement'], row.get("hints_text"))
+                
+                index_repo(repo_url, commit_hash=row['base_commit'])
+                
+                # Limit the results to 300 and don't display them
+                indexing_results = query_repo(row['problem_statement'], 300, False)
+                
+                # Get the file names from the indexing_results
+                file_results = indexing_results[0]
+        
+                # It indexes the repo and stores the results in the session state
+                results = locate_files(repo_name, row['base_commit'], row['problem_statement'], row.get("hints_text"), file_results)
+                
+                # Query the repo for each problem statement. 
 
                 # Process the modified_files for each row
                 modified_files = [os.path.basename(file) for file in row['modified_files']] if isinstance(row['modified_files'], list) else row['modified_files']
@@ -124,6 +140,16 @@ def main():
                         break
                 
                 swebench_df.loc[idx, 'prediction'] = prediction
+                
+                print("-------------------")
+                print(file_results)
+                print("-------------------")
+                print(result)
+                print("-------------------")
+                print(modified_files)
+                print("-------------------")
+                
+                break
         
         # After processing, store the DataFrame to a CSV file
         swebench_df.to_csv('swebench_predictions.csv', index=False)
