@@ -15,7 +15,8 @@ from queryUtils import (
 )
 
 from swebenchUtils import (
-    locate_files
+    locate_files,
+    sweBenchCloneAndQuery
 )
 
 from benchmark import (
@@ -116,16 +117,19 @@ def main():
             for idx, row in group_data.iterrows():
                 repo_url = f"https://github.com/{row['repo']}"
                 
-                index_repo(repo_url, commit_hash=row['base_commit'])
+                # index_repo(repo_url, commit_hash=row['base_commit'])
                 
                 # Limit the results to 300 and don't display them
-                indexing_results = query_repo(row['problem_statement'], 300, False)
+                # indexing_results = query_repo(row['problem_statement'], 300, False)
                 
                 # Get the file names from the indexing_results
-                file_results = indexing_results[0]
+                # file_results = indexing_results[0]
         
                 # It indexes the repo and stores the results in the session state
-                results = locate_files(repo_name, row['base_commit'], row['problem_statement'], row.get("hints_text"), file_results)
+                # results = locate_files(repo_name, row['base_commit'], row['problem_statement'], row.get("hints_text"), file_results)
+
+                # Suggestion : use below line (sweBenchCloneAndQuery()) instead of the 119-128 (index_repo() to locate_files())  
+                results = sweBenchCloneAndQuery(repo_url, row['base_commit'], row['problem_statement'], row['hints_text'])
                 
                 # Query the repo for each problem statement. 
 
@@ -141,8 +145,8 @@ def main():
                 
                 swebench_df.loc[idx, 'prediction'] = prediction
                 
-                print("-------------------")
-                print(file_results)
+                # print("-------------------")
+                # print(file_results)
                 print("-------------------")
                 print(result)
                 print("-------------------")

@@ -45,7 +45,40 @@ def locate_files(repo_name, problem_description, hints, files_list):
         response = get_azure_llm_response(chat_client, MODEL_NAME, prompt)
         responses.append(response)
     
-    return responses 
+    return responses
+
+
+def sweBenchCloneAndQuery(repo_url, commit_hash, problem_description, hints):
+
+    # clone repo at commit
+    repo_name, clone_dir = clone_repository(repo_url=repo_url, commit_hash=commit_hash)
+    # identify files and functions
+    file_infos, files_list, function_infos = analyze_python_files(clone_dir)
+        
+    # file_names = [os.path.basename(file_path) for file_path in files_list]
+    # IN THE PROMPT FUNCTION INFO IS NOT PASSED TEMPOARARILY
+    print(f"Identified {len(function_infos)} functions and {len(file_infos)} files.")
+
+    chat_client = get_azure_chat_client()
+    file_batches = [files_list[i:i + 100] for i in range(0, len(files_list), 100)]
+    responses = []
+    for batch in file_batches:
+        batch_files_list = ", ".join(batch)
+        
+        query = f"What are the files that need to be modified to solve this problem? Problem description: {problem_description}."
+        if hints and hints!="":
+            query = f"{query} Hints for solving the problem: {hints}"
+        
+        prompt = code_location_template.format(
+            repo_name=repo_name,
+            files_list=batch,
+            functions_info=batch_files_list,
+            query=query,
+        )
+        response = get_azure_llm_response(chat_client, MODEL_NAME, prompt)
+        responses.append(response)
+    
+    return responses
 
 
 if __name__=="__main__":
