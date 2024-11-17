@@ -41,3 +41,21 @@ jobs:
           
             #streamlit run project/main.py
             pip install pytest pytest-cov
+
+            - name: Test with pytest
+            env:
+              PYTHONPATH: ./project
+            run: |
+              
+              poetry run pytest --cov=project
+      - name: Install dependencies with Poetry
+        run: |
+            poetry install
+            poetry add datasets 
+            
+      - name: Run SWE-Bench Dataset Tests
+        env:
+          HF_HOME: /tmp/transformers_cache  # Optional caching for Hugging Face datasets
+          PYTHONPATH: ./project 
+        run: |
+              poetry run python tests/test.py
