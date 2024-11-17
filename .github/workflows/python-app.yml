@@ -48,11 +48,19 @@ jobs:
           PYTHONPATH: ./project
           AZURE_INFERENCE_CREDENTIAL: ${{ secrets.AZURE_INFERENCE_CREDENTIAL }}
         run: |
-          pip install pytest pytest-cov
-          poetry run pytest --cov=project
+            
+            export AZURE_INFERENCE_CREDENTIAL=${{ secrets.AZURE_INFERENCE_CREDENTIAL }}
+          
+            
+            pip install pytest pytest-cov
 
-      # Install additional datasets library for SWE-Bench
-      - name: Install SWE-Bench dependencies
+            - name: Test with pytest
+            env:
+              PYTHONPATH: ./project
+            run: |
+              
+              poetry run pytest --cov=project
+      - name: Install dependencies with Poetry
         run: |
           poetry add datasets
 
