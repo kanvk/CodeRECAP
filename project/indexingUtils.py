@@ -175,7 +175,62 @@ def index_repo_files_and_functions(repo_name, clone_dir):
             unixcoder_embedding_model,
         )
     update_indexing_output_log(
-        f"Identified {len(file_docs)} python files. Indexing .....")
-    st.session_state.files_vector_store = save_or_update_faiss_vector_store(
-        f"vector_stores/{repo_name}/files_index", file_docs, unixcoder_embedding_model
-    )
+        f"Identified and indexed {len(file_docs)} python files.")
+
+def clone_repository_add_github(repo_path, branch=None, commit_hash=None):
+    """
+    Clone or update a GitHub repository at a specific branch or commit.
+    
+    Parameters:
+    - repo_path: str, repository path (e.g., "astropy/astropy")
+    - branch: str, specific branch to check out (optional)
+    - commit_hash: str, specific commit hash to check out (optional)
+    """
+    # Construct the full GitHub URL if not already provided
+    if not repo_path.startswith("https://"):
+        repo_url = f"https://github.com/{repo_path}"
+    else:
+        repo_url = repo_path
+    
+    # Determine the repository name and clone directory
+    repo_name = repo_url.split("/")[-1].replace(".git", "")
+    clone_dir = f"./cloned_repos/{repo_name}"
+
+    try:
+        # If the directory exists, perform git pull; otherwise, clone it
+        if os.path.exists(clone_dir):
+            update_indexing_output_log(
+                f"Directory {clone_dir} already exists. Pulling latest changes."
+            )
+            repo = Repo(clone_dir)
+            repo.remotes.origin.pull()
+            update_indexing_output_log("Repository updated successfully.")
+        else:
+            Repo.clone_from(repo_url, clone_dir)
+            update_indexing_output_log(
+                f"Repository cloned successfully into {clone_dir}"
+            )
+        
+        # Check out to a specific branch if provided
+        if branch:
+            repo = Repo(clone_dir)
+            repo.git.checkout(branch)
+            update_indexing_output_log(
+                f"Checked out to branch {branch} in {clone_dir}"
+            )
+
+        # Check out to a specific commit hash if provided
+        if commit_hash:
+            repo = Repo(clone_dir)
+            repo.git.checkout(commit_hash)
+            update_indexing_output_log(
+                f"Checked out to commit {commit_hash} in {clone_dir}"
+            )
+        
+        return repo_name, clone_dir
+
+    except Exception as e:
+        update_indexing_output_log(
+            f"An error occurred while cloning the repository: {e}"
+        )
+        raise e
