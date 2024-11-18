@@ -24,9 +24,8 @@ def get_swebench_dataset() -> pd.DataFrame:
     df = df[['repo', 'base_commit', 'modified_files', 'problem_statement', 'hints_text']]  # Assuming there's a ground truth column
     return df
 
-def run_testing_on_first_repo():
-    swebench_df = get_swebench_dataset()
-    swebench_df = swebench_df.head(1)  # Limit to the first repository for testing
+def run_testing_on_all_repos():
+    swebench_df = get_swebench_dataset()  # Get the dataset for all repos
     swebench_df['prediction'] = None  # Initialize column for predictions
 
     all_true_labels = []  # To store ground truth labels (but we don't have these)
@@ -51,16 +50,9 @@ def run_testing_on_first_repo():
         # Print the repo, true/false, and prediction for manual review
         print(f"Repo: {row['repo']}, Predicted: {prediction}")
 
-    # Evaluation metrics will not work due to missing ground truth
-    # However, you can manually inspect predictions in the print statements above
-    # If you had labels, you could calculate metrics like:
-    # accuracy = accuracy_score(all_true_labels, all_predicted_labels)
-    # precision = precision_score(all_true_labels, all_predicted_labels)
-    # recall = recall_score(all_true_labels, all_predicted_labels)
-    # f1 = f1_score(all_true_labels, all_predicted_labels)
-
     # Print predictions manually
     print(f"Predictions: {all_predicted_labels}")
 
-# Run testing on the first repo
-run_testing_on_first_repo()
+# Run testing on all repos
+run_testing_on_all_repos()
+
