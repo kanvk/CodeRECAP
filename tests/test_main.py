@@ -2,7 +2,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import pandas as pd
 import os
 from datasets import load_dataset
-from project.queryUtils import *  # Assuming this function exists
+from project.queryUtils import *  
 from project.swebenchUtils import sweBenchCloneAndQuery  
 
 def get_modified_files(patch: str):
@@ -20,10 +20,11 @@ def get_swebench_dataset() -> pd.DataFrame:
     ds = load_dataset('princeton-nlp/SWE-bench_Verified')
     df = pd.DataFrame(ds['test'])
     df['modified_files'] = df['patch'].apply(get_modified_files)
-    df = df[['repo', 'base_commit', 'modified_files', 'problem_statement', 'hints_text', 'ground_truth_label']]  # Assuming there's a ground truth column
+    #print(df)
+    df = df[['repo', 'base_commit', 'modified_files', 'problem_statement', 'hints_text']]  # Assuming there's a ground truth column
     return df
 
-def run_testing_on_all_patches():
+def run_testing_on_first_repo():
     swebench_df = get_swebench_dataset()
     assert not swebench_df.empty, "SWE-bench dataset is empty"
     assert "repo" in swebench_df.columns, "Dataset is missing 'repo' column"
