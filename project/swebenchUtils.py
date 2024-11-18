@@ -58,25 +58,25 @@ def sweBenchCloneAndQuery(repo_url, commit_hash, problem_description, hints):
     # IN THE PROMPT FUNCTION INFO IS NOT PASSED TEMPOARARILY
     print(f"Identified {len(function_infos)} functions and {len(file_infos)} files.")
 
-    # chat_client = get_azure_chat_client()
-    # file_batches = [files_list[i:i + 100] for i in range(0, len(files_list), 100)]
-    # responses = []
-    # for batch in file_batches:
-    #     batch_files_list = ", ".join(batch)
-        
-    #     query = f"What are the files that need to be modified to solve this problem? Problem description: {problem_description}."
-    #     if hints and hints!="":
-    #         query = f"{query} Hints for solving the problem: {hints}"
-        
-    #     prompt = code_location_template.format(
-    #         repo_name=repo_name,
-    #         files_list=batch,
-    #         functions_info=batch_files_list,
-    #         query=query,
-    #     )
-    #     response = get_azure_llm_response(chat_client, MODEL_NAME, prompt)
-    #     responses.append(response)
+    chat_client = get_azure_chat_client()
+    file_batches = [files_list[i:i + 100] for i in range(0, len(files_list), 100)]
     responses = []
+    for batch in file_batches:
+        batch_files_list = ", ".join(batch)
+        
+        query = f"What are the files that need to be modified to solve this problem? Problem description: {problem_description}."
+        if hints and hints!="":
+            query = f"{query} Hints for solving the problem: {hints}"
+        
+        prompt = code_location_template.format(
+            repo_name=repo_name,
+            files_list=batch,
+            functions_info=batch_files_list,
+            query=query,
+        )
+        response = get_azure_llm_response(chat_client, MODEL_NAME, prompt)
+        responses.append(response)
+    
     return responses
 
 
