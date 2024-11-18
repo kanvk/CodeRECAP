@@ -2,7 +2,8 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import pandas as pd
 import os
 from datasets import load_dataset
-from project.queryUtils import sweBenchCloneAndQuery  # Assuming this function exists
+from project.queryUtils import *  # Assuming this function exists
+from project.swebenchUtils import sweBenchCloneAndQuery  
 
 def get_modified_files(patch: str):
     # Function to extract modified files from the patch
