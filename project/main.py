@@ -1,4 +1,5 @@
 import streamlit as st
+import matplotlib.pyplot as plt
 import os
 from indexingUtils import (
     is_github_url_valid,
@@ -113,25 +114,12 @@ def main():
         # Group the DataFrame by 'repo'
         grouped = swebench_df.groupby('repo')
         for repo_name, group_data in grouped:
-            print(f"Processing repo: {repo_name}")
             for idx, row in group_data.iterrows():
+                print(f"Processing row: {idx} for repo: {repo_name}")
                 repo_url = f"https://github.com/{row['repo']}"
-                
-                # index_repo(repo_url, commit_hash=row['base_commit'])
-                
-                # Limit the results to 300 and don't display them
-                # indexing_results = query_repo(row['problem_statement'], 300, False)
-                
-                # Get the file names from the indexing_results
-                # file_results = indexing_results[0]
-        
-                # It indexes the repo and stores the results in the session state
-                # results = locate_files(repo_name, row['base_commit'], row['problem_statement'], row.get("hints_text"), file_results)
-
-                # Suggestion : use below line (sweBenchCloneAndQuery()) instead of the 119-128 (index_repo() to locate_files())  
                 results = sweBenchCloneAndQuery(repo_url, row['base_commit'], row['problem_statement'], row['hints_text'])
-                
-                # Query the repo for each problem statement. 
+                # Dummy results for testing purposes
+                # results = ['separable.py', 'sympy_parser.py']
 
                 # Process the modified_files for each row
                 modified_files = [os.path.basename(file) for file in row['modified_files']] if isinstance(row['modified_files'], list) else row['modified_files']
@@ -145,19 +133,38 @@ def main():
                 
                 swebench_df.loc[idx, 'prediction'] = prediction
                 
-                # print("-------------------")
-                # print(file_results)
-                print("-------------------")
-                print(result)
-                print("-------------------")
-                print(modified_files)
-                print("-------------------")
-                
-                break
-        
         # After processing, store the DataFrame to a CSV file
+        print("Saving predictions to CSV file... (swebench_predictions.csv)\n")
         swebench_df.to_csv('swebench_predictions.csv', index=False)
         
+        # clear log and display message
+        reset_querying_output_log()
+        
+        st.session_state.testing_log = ""
+        # Convert the 'prediction' column from string to boolean
+        swebench_df['prediction'] = swebench_df['prediction'].apply(lambda x: x == 'True')
+
+        # Calculate the count of True and False predictions
+        true_count = swebench_df['prediction'].sum()  # Sum of True values
+        false_count = len(swebench_df) - true_count   # Count of False values
+        total_predictions = len(swebench_df)
+
+        # Calculate the percentage of True and False predictions
+        true_percentage = (true_count / total_predictions) * 100
+        false_percentage = (false_count / total_predictions) * 100
+
+        # Display the proportions in Streamlit
+        st.session_state.testing_log += f"**Proportion of True Predictions:** {true_percentage:.2f}% {'\u00A0' * 15}"
+        st.session_state.testing_log += f"**Proportion of False Predictions:** {false_percentage:.2f}%\n\n"
+        st.session_state.testing_log += f"**Number of True Predictions:** {true_count} {'\u00A0' * 15}"
+        st.session_state.testing_log += f"**Number of False Predictions:** {false_count}\n\n"
+        st.write(st.session_state.testing_log)
+                
+        # Display a pie chart to visualize the proportions
+        fig, ax = plt.subplots()
+        ax.pie([true_percentage, false_percentage], labels=['True', 'False'], autopct='%1.1f%%', colors=['#4CAF50', '#FF6347'])
+        ax.set_title('Proportion of True vs False Predictions')
+        st.pyplot(fig)
 
 if __name__ == "__main__":
     indexingUtils.streamlit_log = True
