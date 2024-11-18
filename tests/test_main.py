@@ -2,7 +2,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import pandas as pd
 import os
 from datasets import load_dataset
-from project.queryUtils import *  # Assuming this function exists
+from project.queryUtils import *  
 from project.swebenchUtils import sweBenchCloneAndQuery  
 
 def get_modified_files(patch: str):
@@ -20,14 +20,16 @@ def get_swebench_dataset() -> pd.DataFrame:
     ds = load_dataset('princeton-nlp/SWE-bench_Verified')
     df = pd.DataFrame(ds['test'])
     df['modified_files'] = df['patch'].apply(get_modified_files)
-    df = df[['repo', 'base_commit', 'modified_files', 'problem_statement', 'hints_text', 'ground_truth_label']]  # Assuming there's a ground truth column
+    #print(df)
+    df = df[['repo', 'base_commit', 'modified_files', 'problem_statement', 'hints_text']]  # Assuming there's a ground truth column
     return df
 
-def run_testing_on_all_patches():
+def run_testing_on_first_repo():
     swebench_df = get_swebench_dataset()
+    swebench_df = swebench_df.head(1)  # Limit to the first repository for testing
     swebench_df['prediction'] = None  # Initialize column for predictions
 
-    all_true_labels = []  # To store ground truth labels
+    all_true_labels = []  # To store ground truth labels (but we don't have these)
     all_predicted_labels = []  # To store predicted labels
 
     for idx, row in swebench_df.iterrows():
@@ -43,27 +45,22 @@ def run_testing_on_all_patches():
                 break
         swebench_df.loc[idx, 'prediction'] = prediction
 
-        # Append ground truth and prediction for evaluation later
-        all_true_labels.append(row['ground_truth_label'])
+        # Append prediction for later inspection
         all_predicted_labels.append(prediction == 'True')
+        
+        # Print the repo, true/false, and prediction for manual review
+        print(f"Repo: {row['repo']}, Predicted: {prediction}")
 
-    # Evaluate model performance
-    accuracy = accuracy_score(all_true_labels, all_predicted_labels)
-    precision = precision_score(all_true_labels, all_predicted_labels)
-    recall = recall_score(all_true_labels, all_predicted_labels)
-    f1 = f1_score(all_true_labels, all_predicted_labels)
+    # Evaluation metrics will not work due to missing ground truth
+    # However, you can manually inspect predictions in the print statements above
+    # If you had labels, you could calculate metrics like:
+    # accuracy = accuracy_score(all_true_labels, all_predicted_labels)
+    # precision = precision_score(all_true_labels, all_predicted_labels)
+    # recall = recall_score(all_true_labels, all_predicted_labels)
+    # f1 = f1_score(all_true_labels, all_predicted_labels)
 
-    # Print evaluation metrics
-    print(f'Accuracy: {accuracy:.4f}')
-    print(f'Precision: {precision:.4f}')
-    print(f'Recall: {recall:.4f}')
-    print(f'F1 Score: {f1:.4f}')
+    # Print predictions manually
+    print(f"Predictions: {all_predicted_labels}")
 
-    # Save predictions and evaluation results
-    swebench_df.to_csv('swebench_predictions.csv', index=False)
-
-    return swebench_df
-
-# If you want to call this directly when the script runs:
-if __name__ == "__main__":
-    run_testing_on_all_patches()
+# Run testing on the first repo
+run_testing_on_first_repo()
