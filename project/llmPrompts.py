@@ -106,9 +106,6 @@ code_location_template = PromptTemplate(
         **Files in the Repository:**
         {files_list}
         
-        **Function Details and Additional Information:**
-        {functions_info}
-
         **User Query:**
         {query}
 
@@ -127,3 +124,6 @@ code_location_template = PromptTemplate(
         **IMPORTANT**: Precision is essential; ensure that your answer is concise and follows the format exactly.
     """,
 )
+
+#**Function Details and Additional Information:**
+#       {functions_info}

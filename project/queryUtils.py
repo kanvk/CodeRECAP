@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 from vectorizeCode import search_vector_store
 from azureClient import get_azure_chat_client, get_azure_llm_response, MODEL_NAME
 from llmPrompts import code_location_template
@@ -17,7 +18,7 @@ def reset_querying_output_log():
     st.session_state["querying_log"] = ""
 
 
-def display_top_k_similar_docs_tfidf(query, k, docs_type):
+def display_top_k_similar_docs_tfidf(query, k, docs_type, display=True):
     results = search_tfidf(
         query,
         st.session_state.tfidf_vectorizer,
@@ -25,25 +26,29 @@ def display_top_k_similar_docs_tfidf(query, k, docs_type):
         st.session_state.file_infos,
         k,
     )
-
-    update_querying_output_log("\n" + "-" * 25)
-    update_querying_output_log(
-        f"Top {k} {docs_type}-level matches : (obtained comparing the query against the tf-idf {docs_type} matrix)"
-    )
+    if display:
+        update_querying_output_log("\n" + "-" * 25)
+        update_querying_output_log(
+            f"Top {k} {docs_type}-level matches : (obtained comparing the query against the tf-idf {docs_type} matrix)"
+        )
 
     for rank, file_name in enumerate(results):
         update_querying_output_log(f"{rank + 1}. {file_name}")
 
+    return results
 
-def display_top_k_similar_docs(vector_store, query, k, docs_type):
+def display_top_k_similar_docs(vector_store, query, k, docs_type, display=True):
     # Takes a vector_store and query as input and returns the top k docs matching the query
     results = search_vector_store(vector_store, query, k)
-    update_querying_output_log("\n" + "-" * 25)
-    update_querying_output_log(
-        f"Top {k} {docs_type}-level matches: (obtained comparing the query against the indexed {docs_type} embeddings)"
-    )
+    if display:
+        update_querying_output_log("\n" + "-" * 25)
+        update_querying_output_log(
+            f"Top {k} {docs_type}-level matches: (obtained comparing the query against the indexed {docs_type} embeddings)"
+        )
     for rank, doc in enumerate(results):
         update_querying_output_log(f"{rank+1}. {doc.metadata["name"]}")
+
+    return results
 
 
 def display_llm_response(query):
