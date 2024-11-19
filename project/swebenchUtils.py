@@ -56,7 +56,7 @@ def sweBenchCloneAndQuery(repo_url, commit_hash, problem_description, hints):
     file_infos, files_list, function_infos = analyze_python_files(clone_dir)
         
     # file_names = [os.path.basename(file_path) for file_path in files_list]
-    # IN THE PROMPT FUNCTION INFO IS NOT PASSED TEMPOARARILY
+    # IN THE PROMPT FUNCTION INFO IS NOT PASSED TEMPORARILY
     print(f"Identified {len(function_infos)} functions and {len(file_infos)} files.")
 
     chat_client = get_azure_chat_client()
