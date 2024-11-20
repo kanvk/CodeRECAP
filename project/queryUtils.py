@@ -31,9 +31,8 @@ def display_top_k_similar_docs_tfidf(query, k, docs_type, display=True):
         update_querying_output_log(
             f"Top {k} {docs_type}-level matches : (obtained comparing the query against the tf-idf {docs_type} matrix)"
         )
-
-    for rank, file_name in enumerate(results):
-        update_querying_output_log(f"{rank + 1}. {file_name}")
+        for rank, file_name in enumerate(results):
+            update_querying_output_log(f"{rank + 1}. {file_name}")
 
     return results
 

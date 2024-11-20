@@ -121,6 +121,10 @@ def analyze_python_files(clone_dir):
                     # Add found function info to the list
                     function_infos.extend(function_info)
     files_list = [f["file_path"] for f in file_infos]
+
+    st.session_state.file_infos = file_infos
+    st.session_state.files_list = files_list
+    st.session_state.function_infos = function_infos
     return file_infos, files_list, function_infos
 
 
@@ -131,9 +135,6 @@ def index_repo_files_and_functions(repo_name, clone_dir):
         f"Indexing repository: {repo_name} found at {clone_dir}")
     # Analyze Python files and get function details like start line no, end line no, arguments, etc
     file_infos, files_list, function_infos = analyze_python_files(clone_dir)
-    st.session_state.file_infos = file_infos
-    st.session_state.function_infos = function_infos
-    st.session_state.files_list = files_list
     # Insert function data into the database
     if function_infos:
         insert_function_data(function_infos, db_name=repo_name)

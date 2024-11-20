@@ -1,6 +1,5 @@
 import streamlit as st
-import matplotlib.pyplot as plt
-import os
+
 from indexingUtils import (
     is_github_url_valid,
     clone_repository,
@@ -16,17 +15,15 @@ from queryUtils import (
 )
 
 from swebenchUtils import (
-    locate_files,
-    sweBenchCloneAndQuery
+    locate_files
 )
 
-from benchmark import (
-    get_swebench_dataset
+from testing import (
+    test_swebench,
+    display_test_results
 )
 
 # Example usage: Input a valid URL in the text box. Eg: "https://github.com/kanvk/CodeRECAP.git"
-
-
 def hello_world(name):
     return f"Hello, {name}!"
 
@@ -64,6 +61,7 @@ def query_repo(query_text, k = 5, display = True):
     display_llm_response(query_text)
     
     return file_results, tfidf_results
+
 
 
 def main():
@@ -107,65 +105,19 @@ def main():
 
     # Testing
     st.header("Perform Testing")
+    test_text = st.text_input("Enter number of rows to be tested")
+
     if st.button("Test"):
-        swebench_df = get_swebench_dataset()
-        swebench_df['prediction'] = None
+        if test_text:
+            if test_text.isdigit():  # Ensure the input is an integer
+                rows = int(test_text)  # Convert the input to an integer
+                swebench_df = test_swebench(top_k_tfidf=10, rows=rows)
+                display_test_results(swebench_df, 'prediction_llm')
+                display_test_results(swebench_df, 'prediction_tfidf')
+            else:
+                st.error("Please enter a valid integer.")
 
-        # Group the DataFrame by 'repo'
-        grouped = swebench_df.groupby('repo')
-        for repo_name, group_data in grouped:
-            for idx, row in group_data.iterrows():
-                print(f"Processing row: {idx} for repo: {repo_name}")
-                repo_url = f"https://github.com/{row['repo']}"
-                results = sweBenchCloneAndQuery(repo_url, row['base_commit'], row['problem_statement'], row['hints_text'])
-                # Dummy results for testing purposes
-                # results = ['separable.py', 'sympy_parser.py']
-
-                # Process the modified_files for each row
-                modified_files = [os.path.basename(file) for file in row['modified_files']] if isinstance(row['modified_files'], list) else row['modified_files']
-                
-                # Check if the prediction is in modified_files
-                prediction = 'False'  # Default to 'False'
-                for result in results:
-                    if result in modified_files:
-                        prediction = 'True'
-                        break
-                
-                swebench_df.loc[idx, 'prediction'] = prediction
-                
-        # After processing, store the DataFrame to a CSV file
-        print("Saving predictions to CSV file... (swebench_predictions.csv)\n")
-        swebench_df.to_csv('swebench_predictions.csv', index=False)
         
-        # clear log and display message
-        reset_querying_output_log()
-        
-        st.session_state.testing_log = ""
-        # Convert the 'prediction' column from string to boolean
-        swebench_df['prediction'] = swebench_df['prediction'].apply(lambda x: x == 'True')
-
-        # Calculate the count of True and False predictions
-        true_count = swebench_df['prediction'].sum()  # Sum of True values
-        false_count = len(swebench_df) - true_count   # Count of False values
-        total_predictions = len(swebench_df)
-
-        # Calculate the percentage of True and False predictions
-        true_percentage = (true_count / total_predictions) * 100
-        false_percentage = (false_count / total_predictions) * 100
-
-        # Display the proportions in Streamlit
-        st.session_state.testing_log += f"**Proportion of True Predictions:** {true_percentage:.2f}% {'\u00A0' * 15}"
-        st.session_state.testing_log += f"**Proportion of False Predictions:** {false_percentage:.2f}%\n\n"
-        st.session_state.testing_log += f"**Number of True Predictions:** {true_count} {'\u00A0' * 15}"
-        st.session_state.testing_log += f"**Number of False Predictions:** {false_count}\n\n"
-        st.write(st.session_state.testing_log)
-                
-        # Display a pie chart to visualize the proportions
-        fig, ax = plt.subplots()
-        ax.pie([true_percentage, false_percentage], labels=['True', 'False'], autopct='%1.1f%%', colors=['#4CAF50', '#FF6347'])
-        ax.set_title('Proportion of True vs False Predictions')
-        st.pyplot(fig)
-
 if __name__ == "__main__":
     indexingUtils.streamlit_log = True
     main()

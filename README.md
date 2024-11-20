@@ -28,3 +28,9 @@ AZURE_INFERENCE_CREDENTIAL=TOKEN_HERE
 2. Once the indexing is complete, enter your query in the next input box and click on the "Query Now" button.
    - Top 5 function-level matches and top 5 file-level matches will be displayed. These are based on the vector similarity to the indexed functions' and files' code.
    - The query will also be sent to an LLM and its response is displayed.
+
+## Testing
+1. Enter the number of rows to be tested from the swebench dataset (maximum number avilable is 500)
+2. Press "Test" button
+3. Results are saved automatically to "swebench_predictions.csv"
+4. A pie chart and a summary of results are diplayed for each method available
