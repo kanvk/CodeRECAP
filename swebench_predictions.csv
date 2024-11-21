@@ -1,4 +1,4 @@
-repo,base_commit,modified_files,problem_statement,hints_text,prediction
+repo,base_commit,modified_files,problem_statement,hints_text,prediction_llm,prediction_tfidf
 astropy/astropy,d16bfe05a744909de4b27f5875fe0d4ed41ce607,['astropy/modeling/separable.py'],"Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels
 Consider the following model:
 
@@ -39,7 +39,7 @@ array([[ True,  True, False, False],
 Suddenly the inputs and outputs are no longer separable?
 
 This feels like a bug to me, but I might be missing something?
-",,True
+",,False,True
 astropy/astropy,298ccb478e6bf092953bca67a3d29dc6c35f6752,['astropy/timeseries/core.py'],"TimeSeries: misleading exception when required column check fails.
 <!-- This comments are hidden when you submit the issue,
 so you do not need to remove them! -->
@@ -151,4 +151,4 @@ I use a brand new conda env (upgrading my old python 3.7, astropy 4 based env is
 
 - I read some posts online on  `Plugin already registered` error in other projects, they seem to indicate some symlink issues making pytest reading `contest.py` twice, but I can't seem to find such problems in my environment (my astropy is an editable install, so the path to the source is directly used).
 
-",True
+",True,False

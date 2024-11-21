@@ -47,18 +47,19 @@ def locate_files(repo_name, problem_description, hints, files_list):
     
     return responses
 
-
-def sweBenchCloneAndQuery(repo_url, commit_hash, problem_description, hints):
-
+def sweBenchClone(repo_url, commit_hash):
     # clone repo at commit
     repo_name, clone_dir = clone_repository(repo_url=repo_url, commit_hash=commit_hash)
     # identify files and functions
     file_infos, files_list, function_infos = analyze_python_files(clone_dir)
         
     # file_names = [os.path.basename(file_path) for file_path in files_list]
-    # IN THE PROMPT FUNCTION INFO IS NOT PASSED TEMPORARILY
     print(f"Identified {len(function_infos)} functions and {len(file_infos)} files.")
-
+    
+    return files_list, file_infos, function_infos
+    
+def sweBenchQuery(files_list, repo_name, problem_description, hints):
+    # IN THE PROMPT FUNCTION INFO IS NOT PASSED TEMPORARILY
     chat_client = get_azure_chat_client()
     file_batches = [files_list[i:i + 100] for i in range(0, len(files_list), 100)]
     responses = []
