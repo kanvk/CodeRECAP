@@ -24,63 +24,6 @@ def get_swebench_dataset() -> pd.DataFrame:
     df = df[['repo', 'base_commit', 'modified_files', 'problem_statement', 'hints_text']]  # Assuming there's a ground truth column
     return df
 
-def run_testing_on_first_repo():
-    swebench_df = get_swebench_dataset()
-    assert not swebench_df.empty, "SWE-bench dataset is empty"
-    assert "repo" in swebench_df.columns, "Dataset is missing 'repo' column"
-    assert "modified_files" in swebench_df.columns, "Dataset is missing 'modified_files' column"
-
-
-def test_get_modified_files():
-    """Test parsing of modified files from a patch."""
-    sample_patch = """diff --git a/file1.py b/file1.py
-index 123abc..456def 100644
---- a/file1.py
-+++ b/file1.py"""
-    modified_files = get_modified_files(sample_patch)
-    assert modified_files == ["file1.py"], f"Expected ['file1.py'], got {modified_files}"
-
-
-def test_grouping_by_repo():
-    """Test if data can be grouped by repo without issues."""
-    swebench_df = get_swebench_dataset()
-    grouped = swebench_df.groupby('repo')
-    assert len(grouped) > 0, "No repositories found in grouping"
-    for repo_name, group_data in grouped:
-        assert "modified_files" in group_data.columns, f"'modified_files' missing in group for {repo_name}"
-
-
-def test_hello_world():
-    """Test the hello_world function."""
-    result = hello_world("World")
-    assert result == "Hello, World!"  # Check if the function returns the expected output
-
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-import pandas as pd
-import os
-from datasets import load_dataset
-from project.queryUtils import *  
-from project.swebenchUtils import sweBenchCloneAndQuery  
-
-def get_modified_files(patch: str):
-    # Function to extract modified files from the patch
-    modified_files = []
-    for line in patch.splitlines():
-        if line.startswith('diff --git'):
-            parts = line.split()
-            if len(parts) > 2:
-                modified_file = parts[2].replace('a/', '', 1)
-                modified_files.append(modified_file)
-    return modified_files
-
-def get_swebench_dataset() -> pd.DataFrame:
-    ds = load_dataset('princeton-nlp/SWE-bench_Verified')
-    df = pd.DataFrame(ds['test'])
-    df['modified_files'] = df['patch'].apply(get_modified_files)
-    #print(df)
-    df = df[['repo', 'base_commit', 'modified_files', 'problem_statement', 'hints_text']]  # Assuming there's a ground truth column
-    return df
-
 def run_testing_on_all_repos():
     swebench_df = get_swebench_dataset()  # Get the dataset for all repos
     swebench_df['prediction'] = None  # Initialize column for predictions

@@ -47,7 +47,8 @@ def locate_files(repo_name, problem_description, hints, files_list):
     
     return responses
 
-def sweBenchClone(repo_url, commit_hash):
+
+def sweBenchCloneAndQuery(repo_url, commit_hash, problem_description, hints):
     # clone repo at commit
     repo_name, clone_dir = clone_repository(repo_url=repo_url, commit_hash=commit_hash)
     # identify files and functions

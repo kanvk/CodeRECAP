@@ -1,6 +1,6 @@
 import streamlit as st
-
-from indexingUtils import (
+import os
+from project.indexingUtils import (
     is_github_url_valid,
     clone_repository,
     index_repo_files_and_functions,
@@ -19,9 +19,8 @@ from project.swebenchUtils import (
     sweBenchCloneAndQuery
 )
 
-from testing import (
-    test_swebench,
-    display_test_results
+from project.benchmark import (
+    get_swebench_dataset
 )
 
 # Example usage: Input a valid URL in the text box. Eg: "https://github.com/kanvk/CodeRECAP.git"
