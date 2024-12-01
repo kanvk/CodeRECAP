@@ -34,3 +34,8 @@ AZURE_INFERENCE_CREDENTIAL=TOKEN_HERE
 2. Press "Test" button
 3. Results are saved automatically to "swebench_predictions.csv"
 4. A pie chart and a summary of results are diplayed for each method available
+
+## Benchmark Results
+1. cd benchmark and follow the instructions in the readme file in the directory.
+
+Results can be seen in the Evaluation.ipynb file as well.
